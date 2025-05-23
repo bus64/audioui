@@ -94,7 +94,8 @@ class Maestro:
                         "params":      {
                             "notes":     ev["notes"],
                             "durations": ev["durations"],
-                            "intensity": ev["intensity"]
+                            "intensity": ev["intensity"],
+                            "tempo":     self.tempo  # Pass current tempo
                         }
                     })
                 # orchestration

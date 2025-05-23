@@ -12,9 +12,9 @@ class FMBellCluster(BasePreset):
         self,
         intensity=0.6,
         duration=4.0,
-        carrier_freq=330.0,
-        mod_ratio=2.0,
-        index=5.0,
+        carrier_freq=440.0,  # Changed default
+        mod_ratio=1.414,     # Changed default
+        index=3.0,           # Changed default
         chorus_depth=1.2,
         chorus_feedback=0.3,
         reverb_size=0.8,
@@ -25,6 +25,8 @@ class FMBellCluster(BasePreset):
     ):
         kw.setdefault('enable_reverb', True)
         kw.setdefault('stereo_w', 0.2)
+        if duration == 0: # Ensure duration is not zero
+            duration = 0.001
         super().__init__(intensity=intensity, duration=duration, **kw)
 
         # FM params
