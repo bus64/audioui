@@ -4,22 +4,124 @@
   "key": "C minor",
   "tempo": 144,
   "time_signature": "2/4",
-  "notes": [
-    {"pitch":"C3","frequency":130.81,"duration_beats":0.5},
-    {"pitch":"C2","frequency":65.41,"duration_beats":0.5},
-    {"pitch":"C3","frequency":130.81,"duration_beats":0.5},
-    {"pitch":"C2","frequency":65.41,"duration_beats":0.5},
-    {"pitch":"C3","frequency":130.81,"duration_beats":0.5},
-    {"pitch":"C2","frequency":65.41,"duration_beats":0.5},
-    {"pitch":"C3","frequency":130.81,"duration_beats":0.5},
-    {"pitch":"C2","frequency":65.41,"duration_beats":0.5},
-    {"pitch":"G4","frequency":392.00,"duration_beats":1},
-    {"pitch":"E♭4","frequency":311.13,"duration_beats":1},
-    {"pitch":"F4","frequency":349.23,"duration_beats":1},
-    {"pitch":"D♭4","frequency":277.18,"duration_beats":1},
-    {"pitch":"E♭4","frequency":311.13,"duration_beats":1},
-    {"pitch":"C4","frequency":261.63,"duration_beats":1},
-    {"pitch":"D♭4","frequency":277.18,"duration_beats":1},
-    {"pitch":"B3","frequency":246.94,"duration_beats":1}
+  "created": "2024-01-01",
+  "mood": "Dramatic",
+  "description": "The opening of Chopin's famous 'Revolutionary' Étude.",
+  "poem": "N/A",
+  "structure": [
+    {
+      "section": "A",
+      "bars": 8,
+      "time_signature": "2/4"
+    }
+  ],
+  "variations": 1,
+  "remix": {
+    "self_shuffle": 0.0,
+    "exchange_ratio_range": [
+      0.0,
+      0.0
+    ],
+    "transition_blocks": 0
+  },
+  "hands": [
+    [
+      {
+        "pitch": "C3",
+        "frequency": 130.81,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C2",
+        "frequency": 65.41,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C3",
+        "frequency": 130.81,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C2",
+        "frequency": 65.41,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C3",
+        "frequency": 130.81,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C2",
+        "frequency": 65.41,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C3",
+        "frequency": 130.81,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C2",
+        "frequency": 65.41,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E♭4",
+        "frequency": 311.13,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "F4",
+        "frequency": 349.23,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D♭4",
+        "frequency": 277.18,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E♭4",
+        "frequency": 311.13,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C4",
+        "frequency": 261.63,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D♭4",
+        "frequency": 277.18,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B3",
+        "frequency": 246.94,
+        "duration_beats": 1,
+        "intensity": 0.7
+      }
+    ]
   ]
 }

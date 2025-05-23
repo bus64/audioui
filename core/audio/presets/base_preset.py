@@ -37,6 +37,7 @@ class BasePreset(metaclass=PresetMeta):
         enable_chorus: bool                   = False,
         enable_filter: bool                   = False,
         filt_freq: float                      = 1200,
+        tempo: float                          = 120.0, # New tempo parameter
         **extra
     ):
         # allow either a single float or per-note list
@@ -62,6 +63,7 @@ class BasePreset(metaclass=PresetMeta):
         self.notes         = notes
         self.durations     = durations
         self._melody_ints  = intensities
+        self.tempo         = tempo # Store tempo
         # ───────────────────────────────────────────────────────────────
 
     def _env(self, fade=.005) -> Fader:
@@ -102,7 +104,12 @@ class BasePreset(metaclass=PresetMeta):
                 or [self.intensity] * len(self.notes)
             )
             for f, d, i in zip(self.notes, self.durations, ints):
-                env = Fader(fadein=0.005, fadeout=0.02, dur=d, mul=i)
+                # Calculate duration in seconds using tempo
+                # Default to 120 bpm if self.tempo is invalid (e.g., 0 or not set)
+                effective_tempo = self.tempo if self.tempo and self.tempo > 0 else 120.0
+                duration_in_seconds = d * (60.0 / effective_tempo)
+                
+                env = Fader(fadein=0.005, fadeout=0.02, dur=duration_in_seconds, mul=i)
                 osc = Sine(freq=f, mul=env)
                 seq.append((env, osc))
             built = seq
@@ -115,7 +122,7 @@ class BasePreset(metaclass=PresetMeta):
                 fader.play()
                 out = self._fx_chain(sig)
                 self._keep(out).out()
-            return built
+            return [item[0] for item in built] # Return list of Faders
 
         # single-shot case
         dry = built

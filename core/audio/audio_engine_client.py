@@ -132,3 +132,54 @@ class AudioEngineClient:
         Alias for shutdown(), for legacy callers.
         """
         self.shutdown()
+
+    async def _get_active_presets_async(self):
+        await self.cmd_queue.put({"cmd": "get_active_presets"})
+        # TODO: Implement a more robust ack matching system if needed
+        # For now, assume the next item in ack_queue is the response
+        response = await self.ack_queue.get()
+        if response and response.get("ack") == "get_active_presets":
+            return response.get("data")
+        else:
+            self.logger.error(f"Unexpected or missing ack for get_active_presets: {response}")
+            return None
+
+    def get_active_presets(self) -> list | None:
+        """
+        Retrieves the list of active presets from the audio engine.
+        Blocks until the response is received.
+        """
+        if not self.loop.is_running():
+            self.logger.error("Asyncio loop is not running. Cannot get active presets.")
+            return None
+        future = asyncio.run_coroutine_threadsafe(self._get_active_presets_async(), self.loop)
+        try:
+            return future.result(timeout=5)  # Add a timeout for safety
+        except Exception as e:
+            self.logger.error(f"Error getting active presets: {e}")
+            return None
+
+    async def _get_current_melody_async(self):
+        await self.cmd_queue.put({"cmd": "get_current_melody"})
+        # TODO: Implement a more robust ack matching system if needed
+        response = await self.ack_queue.get()
+        if response and response.get("ack") == "get_current_melody":
+            return response.get("data")
+        else:
+            self.logger.error(f"Unexpected or missing ack for get_current_melody: {response}")
+            return None
+
+    def get_current_melody(self) -> str | None:
+        """
+        Retrieves the current melody name from the audio engine.
+        Blocks until the response is received.
+        """
+        if not self.loop.is_running():
+            self.logger.error("Asyncio loop is not running. Cannot get current melody.")
+            return None
+        future = asyncio.run_coroutine_threadsafe(self._get_current_melody_async(), self.loop)
+        try:
+            return future.result(timeout=5)  # Add a timeout for safety
+        except Exception as e:
+            self.logger.error(f"Error getting current melody: {e}")
+            return None
