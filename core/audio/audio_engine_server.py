@@ -83,44 +83,50 @@ class AudioEngine:
         self.mute=False
 
     async def _cleanup_stopped_presets(self):
-        logger.debug("Running _cleanup_stopped_presets")
-        # Iterate over a copy for safe removal
-        for preset_info in self.active_presets[:]: 
-            instance = preset_info.get("instance")
-            if not instance:
-                logger.warning("Preset_info missing 'instance': %s. Removing.", preset_info.get('name', 'Unknown'))
-                try:
+        Walk self.active_presets and drop any whose
+        instance (list or PyoObject) has finished playing.
+
+        for preset_info in list(self.active_presets):      # iterate over a copy
+            instance = preset_info["instance"]
+            name = preset_info["name"]
+
+            # 1) handle list of faders (e.g. sequences/melodies)
+            if isinstance(instance, list):
+                if not instance:
+                    logger.info("Preset %r instance is empty. Removing.", name)
                     self.active_presets.remove(preset_info)
-                except ValueError: # Should not happen if iterating over a copy and item is from original
-                    logger.warning("Failed to remove preset_info that was already missing instance.")
+                    continue
+
+                # check that every fader has isDone() == True
+                all_done = all(
+                    getattr(f, "isDone", lambda: False)()
+                    for f in instance
+                )
+                if all_done:
+                    logger.info("Preset %r (melody/sequence) all faders done. Removing.", name)
+                    self.active_presets.remove(preset_info)
+                else:
+                    logger.debug("Preset %r (melody/sequence) still has active faders. Keeping.", name)
                 continue
 
-            try:
-                # Assuming PyoObject has an isPlaying() method or similar.
-                # BasePreset is expected to provide access to the underlying PyoObject's state.
-                if hasattr(instance, 'isPlaying') and callable(instance.isPlaying):
-                    if not instance.isPlaying():
-                        logger.info("Preset '%s' is no longer playing. Removing.", preset_info["name"])
+            # 2) handle single PyoObject via isPlaying() / getIsPlaying()
+            played = False
+            for method in ("isPlaying", "getIsPlaying"):
+                if hasattr(instance, method) and callable(getattr(instance, method)):
+                    if not getattr(instance, method)():
+                        logger.info("Preset %r is no longer playing. Removing.", name)
                         self.active_presets.remove(preset_info)
-                elif hasattr(instance, 'getIsPlaying') and callable(instance.getIsPlaying): # Alternative common name
-                    if not instance.getIsPlaying():
-                        logger.info("Preset '%s' (using getIsPlaying) is no longer playing. Removing.", preset_info["name"])
-                        self.active_presets.remove(preset_info)
-                else:
-                    # If no direct isPlaying method, we might need other checks, 
-                    # or assume it's always active until explicitly stopped/replaced.
-                    # For now, log if the state cannot be determined.
-                    logger.debug("Preset '%s' does not have a recognized isPlaying/getIsPlaying method. Skipping cleanup for this item.", preset_info["name"])
+                    else:
+                        logger.debug("Preset %r still playing. Keeping.", name)
+                    played = True
+                    break
 
-            except AttributeError as e:
-                logger.error(f"AttributeError checking if preset {preset_info['name']} is playing: {e}. Removing from active list.")
-                self.active_presets.remove(preset_info)
-            except Exception as e:
-                logger.error(f"Error checking if preset {preset_info['name']} is playing: {e}. Removing from active list.")
-                # Ensure removal if an unexpected error occurs during check, to prevent stuck presets
-                if preset_info in self.active_presets:
-                     self.active_presets.remove(preset_info)
-        logger.debug("Finished _cleanup_stopped_presets. Active presets count: %d", len(self.active_presets))
+            if not played:
+                # no recognized playback API => leave it alone (or handle specially)
+                logger.debug(
+                    "Preset %r object type %s has no isPlaying/getIsPlaying method – skipping cleanup.",
+                    name, type(instance).__name__
+                )
 
 
     async def _periodic_cleanup_task(self):
