@@ -83,56 +83,55 @@ class AudioEngine:
         self.mute=False
 
     async def _cleanup_stopped_presets(self):
+        """
         Walk self.active_presets and drop any whose
-        instance (list or PyoObject) has finished playing.
+        instance (list of Faders or PyoObject) has finished playing.
+        """
+        logger.debug("Running _cleanup_stopped_presets")
+        for info in list(self.active_presets):
+            inst = info.get("instance")
+            name = info.get("name", "Unknown")
 
-        for preset_info in list(self.active_presets):      # iterate over a copy
-            instance = preset_info["instance"]
-            name = preset_info["name"]
-
-            # 1) handle list of faders (e.g. sequences/melodies)
-            if isinstance(instance, list):
-                if not instance:
-                    logger.info("Preset %r instance is empty. Removing.", name)
-                    self.active_presets.remove(preset_info)
-                    continue
-
-                # check that every fader has isDone() == True
-                all_done = all(
-                    getattr(f, "isDone", lambda: False)()
-                    for f in instance
-                )
-                if all_done:
-                    logger.info("Preset %r (melody/sequence) all faders done. Removing.", name)
-                    self.active_presets.remove(preset_info)
-                else:
-                    logger.debug("Preset %r (melody/sequence) still has active faders. Keeping.", name)
+            if not inst:
+                logger.warning("Missing instance for '%s'. Removing.", name)
+                self.active_presets.remove(info)
                 continue
 
-            # 2) handle single PyoObject via isPlaying() / getIsPlaying()
-            played = False
-            for method in ("isPlaying", "getIsPlaying"):
-                if hasattr(instance, method) and callable(getattr(instance, method)):
-                    if not getattr(instance, method)():
-                        logger.info("Preset %r is no longer playing. Removing.", name)
-                        self.active_presets.remove(preset_info)
-                    else:
-                        logger.debug("Preset %r still playing. Keeping.", name)
-                    played = True
-                    break
+            # 1) list of Faders
+            if isinstance(inst, list):
+                if not inst:
+                    logger.info("'%s' empty list. Removing.", name)
+                    self.active_presets.remove(info)
+                elif all(getattr(f, "isDone", lambda: False)() for f in inst):
+                    logger.info("'%s' all faders done. Removing.", name)
+                    self.active_presets.remove(info)
+                else:
+                    logger.debug("'%s' faders still active. Keeping.", name)
+                continue
 
-            if not played:
-                # no recognized playback API => leave it alone (or handle specially)
+            # 2) single PyoObject
+            for method in ("isPlaying", "getIsPlaying"):
+                if hasattr(inst, method) and callable(getattr(inst, method)):
+                    alive = getattr(inst, method)()
+                    if not alive:
+                        logger.info("'%s' stopped playing. Removing.", name)
+                        self.active_presets.remove(info)
+                    else:
+                        logger.debug("'%s' still playing. Keeping.", name)
+                    break
+            else:
                 logger.debug(
-                    "Preset %r object type %s has no isPlaying/getIsPlaying method – skipping cleanup.",
-                    name, type(instance).__name__
+                    "'%s' of type %s has no playback check. Skipping cleanup.",
+                    name,
+                    type(inst).__name__,
                 )
 
+        logger.debug("Finished _cleanup_stopped_presets. Active count: %d", len(self.active_presets))
 
     async def _periodic_cleanup_task(self):
         while not self.shutdown_event.is_set():
             await asyncio.sleep(self.CLEANUP_INTERVAL)
-            if self.shutdown_event.is_set(): # Re-check after sleep before cleanup
+            if self.shutdown_event.is_set():
                 break
             logger.debug("Periodic cleanup task waking up.")
             await self._cleanup_stopped_presets()
@@ -151,20 +150,18 @@ class AudioEngine:
                     self.cmd_queue.task_done()
             except asyncio.CancelledError:
                 logger.info("Main run loop task cancelled.")
-                break # Exit loop if server task is cancelled
+                break
 
         logger.info("Shutting down server...")
-        # Stop and cleanup the periodic task
         if self._cleanup_task:
             self._cleanup_task.cancel()
             try:
                 await self._cleanup_task
             except asyncio.CancelledError:
-                logger.info("Preset cleanup task successfully cancelled.")
+                logger.info("Preset cleanup task cancelled.")
             except Exception as e:
-                logger.error(f"Exception during cleanup task shutdown: {e}")
-        
-        # separate calls to avoid chaining None
+                logger.error("Error during cleanup shutdown: %s", e)
+
         self.server.stop()
         self.server.shutdown()
         logger.info("server shut down")
@@ -309,9 +306,15 @@ class AudioEngine:
         loop  = asyncio.get_running_loop()
         start = loop.time()
 
+        logger.info(f"_process_block_events: Received {len(events)} events. Block start time: {start}, Loop time now: {loop.time()}")
+        logger.debug(f"_process_block_events: Full events list: {events}")
+
         for ev in sorted(events, key=lambda e: e["time_offset"]):
-            logger.debug("  next event: %s", ev)
-            await asyncio.sleep(max(0, (start + ev["time_offset"]) - loop.time()))
+            current_loop_time = loop.time()
+            sleep_duration = max(0, (start + ev["time_offset"]) - current_loop_time)
+            logger.info(f"  Processing event: {ev.get('preset')} at offset {ev['time_offset']:.3f}s. Start_block_time: {start:.3f}, current_loop_time: {current_loop_time:.3f}. Calculated sleep: {sleep_duration:.3f}s")
+            logger.debug("  next event: %s", ev) # Retained original debug log for full event details
+            await asyncio.sleep(sleep_duration)
 
             name, params = ev["preset"], ev.get("params", {})
             logger.debug("    firing preset '%s'  raw params=%s", name, params)
@@ -327,8 +330,11 @@ class AudioEngine:
             logger.debug("    split → pr_args=%s  meta=%s", pr_args, meta)
 
             chain = cls(**pr_args).play()
-            self._voices.append(chain)
+            self._voices.append(chain) # Keep track of the PyoObject or list of Faders
+            logger.info(f"    Fired preset {name}. Returned chain: {type(chain)}. Loop time after play: {loop.time():.3f}")
+            # Original log line for play_block kept for consistency, though new one is more detailed for this purpose
             logger.info("▶ [play_block] %s %s @ %.2fs", name, pr_args, ev["time_offset"])
+
 
             if gain := meta.get("gain_db"):
                 logger.debug("      applying gain_db=%.2f", gain)
@@ -349,3 +355,4 @@ class AudioEngine:
                 for sig in getattr(chain, "values", lambda: [])():
                     try: Chorus(sig, depth=0.5, feedback=0.25, bal=0.5).out()
                     except: pass
+        logger.info(f"_process_block_events: Finished processing all events. Loop time at end: {loop.time()}")
