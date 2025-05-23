@@ -1,0 +1,25 @@
+{
+  "title": "Prelude in D Minor, BWV 851",
+  "composer": "Johann Sebastian Bach",
+  "key": "D minor",
+  "tempo": 100,
+  "time_signature": "4/4",
+  "notes": [
+    {"pitch":"D4","frequency":293.66,"duration_beats":0.5},
+    {"pitch":"F4","frequency":349.23,"duration_beats":0.5},
+    {"pitch":"A4","frequency":440.00,"duration_beats":0.5},
+    {"pitch":"D5","frequency":587.33,"duration_beats":0.5},
+    {"pitch":"C5","frequency":523.25,"duration_beats":0.5},
+    {"pitch":"A4","frequency":440.00,"duration_beats":0.5},
+    {"pitch":"F4","frequency":349.23,"duration_beats":0.5},
+    {"pitch":"D4","frequency":293.66,"duration_beats":0.5},
+    {"pitch":"E4","frequency":329.63,"duration_beats":0.5},
+    {"pitch":"G4","frequency":392.00,"duration_beats":0.5},
+    {"pitch":"B♭4","frequency":466.16,"duration_beats":0.5},
+    {"pitch":"D5","frequency":587.33,"duration_beats":0.5},
+    {"pitch":"C5","frequency":523.25,"duration_beats":0.5},
+    {"pitch":"A4","frequency":440.00,"duration_beats":0.5},
+    {"pitch":"F4","frequency":349.23,"duration_beats":0.5},
+    {"pitch":"D4","frequency":293.66,"duration_beats":0.5}
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "title": "Canon in D (ground bass)",
+  "composer": "Johann Pachelbel",
+  "key": "D major",
+  "tempo": 80,
+  "time_signature": "4/4",
+  "notes": [
+    {"pitch":"D4","frequency":293.66,"duration_beats":4},
+    {"pitch":"A3","frequency":220.00,"duration_beats":4},
+    {"pitch":"B3","frequency":246.94,"duration_beats":4},
+    {"pitch":"F#3","frequency":185.00,"duration_beats":4},
+    {"pitch":"G3","frequency":196.00,"duration_beats":4},
+    {"pitch":"D3","frequency":146.83,"duration_beats":4},
+    {"pitch":"G3","frequency":196.00,"duration_beats":4},
+    {"pitch":"A3","frequency":220.00,"duration_beats":4}
+  ]
+}

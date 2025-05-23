@@ -1,0 +1,993 @@
+File,Line,Keyword,Code Snippet
+C:/Users/lierm/Documents/Games/ALLV8/src\graphics_analyser.py,8,blit,"such as those starting with ""pygame.draw"", ""pygame.display.flip/update"", or any "".blit("", "".flip("", "".update("" calls."
+C:/Users/lierm/Documents/Games/ALLV8/src\graphics_analyser.py,8,flip,"such as those starting with ""pygame.draw"", ""pygame.display.flip/update"", or any "".blit("", "".flip("", "".update("" calls."
+C:/Users/lierm/Documents/Games/ALLV8/src\graphics_analyser.py,8,update,"such as those starting with ""pygame.draw"", ""pygame.display.flip/update"", or any "".blit("", "".flip("", "".update("" calls."
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,99,blit,"combined_surface.blit(text_surface, text_rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,166,update,self.grid_animation.update(speed_factor=1)
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,190,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,190,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,253,update,"c['animation'].update(speed_factor=7*progress_in_flash)  # speed them up to ""unfold"" quickly"
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,280,pygame_draw,"pygame.draw.rect(squares_surf, color, (x, y, self.pixel_scale, self.pixel_scale))"
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,283,blit,"self.blended_surface.blit(squares_surf, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,286,blit,"self.screen.blit(self.blended_surface, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,324,pygame_draw,"pygame.draw.rect(accumulation_surface, pixel['color'], (x, y, self.pixel_scale, self.pixel_scale))"
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,325,pygame_draw,pygame.draw.rect(
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,334,blit,"self.screen.blit(accumulation_surface, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,355,pygame_draw,pygame.draw.circle(
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,364,blit,self.screen.blit(
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,409,blit,"self.screen.blit(scaled_surf, scaled_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,412,blit,"self.screen.blit(scaled_surf, scaled_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,418,blit,"self.screen.blit(word_surface, word_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,420,blit,"self.screen.blit(word_surface, word_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,427,blit,"self.screen.blit(fade_surface, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,433,blit,"self.screen.blit(black_surface, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,462,pygame_draw,"pygame.draw.line(overlay, (*color, alpha), p, p_next, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,465,pygame_draw,"pygame.draw.line(overlay, (*color, alpha), p, p_next, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\loading_animation.py,467,blit,"self.screen.blit(overlay, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\main.py,178,blit,"screen.blit(loading_image, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\main.py,179,pygame_display_update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\main.py,179,update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\pixpic\tools\pixpic\grid_app.py,313,update,"self.preview_canvas_manager.update(current_shape, shape_def)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,58,pygame_draw,"pygame.draw.circle(surface, color,"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,69,pygame_draw,"pygame.draw.circle(surface, color, (ICON_SIZE[0] // 2, ICON_SIZE[1] // 2),"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,81,pygame_draw,"pygame.draw.polygon(surface, color, points)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,83,pygame_draw,"pygame.draw.polygon(surface, color, [(ICON_SIZE[0] // 2, 2 * SCALE_FACTOR),"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,97,pygame_draw,"pygame.draw.polygon(surface, color, points)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,98,pygame_draw,"pygame.draw.line(surface, (255, 255, 255),"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,109,pygame_draw,"pygame.draw.polygon(surface, (255, 255, 0), points)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,127,pygame_draw,"pygame.draw.line(surface, color, center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,136,pygame_draw,"pygame.draw.line(surface, color, end_pos, branch_end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,143,pygame_draw,"pygame.draw.circle(surface, color, (ICON_SIZE[0] // 2, ICON_SIZE[1] // 2), ICON_SIZE[0] // 2 - 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,150,pygame_draw,"pygame.draw.polygon(surface, color, points)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,158,pygame_draw,"pygame.draw.polygon(surface, color, points)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,159,pygame_draw,"pygame.draw.line(surface, (255, 255, 255), (ICON_SIZE[0] // 2, ICON_SIZE[1] // 2),"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,166,pygame_draw,"pygame.draw.circle(surface, color, (ICON_SIZE[0] // 2, ICON_SIZE[1] // 2), ICON_SIZE[0] // 3 - 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,170,pygame_draw,"pygame.draw.line(surface, color, (ICON_SIZE[0] // 2, ICON_SIZE[1] // 2), end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,176,pygame_draw,"pygame.draw.line(surface, color, (ICON_SIZE[0] // 2, 2 * SCALE_FACTOR), (ICON_SIZE[0] // 2, ICON_SIZE[1] - 2 * SCALE_FACTOR), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,177,pygame_draw,"pygame.draw.line(surface, color, (2 * SCALE_FACTOR, ICON_SIZE[1] // 2), (ICON_SIZE[0] - 2 * SCALE_FACTOR, ICON_SIZE[1] // 2), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,184,pygame_draw,"pygame.draw.line(surface, color, (2 * SCALE_FACTOR, i), (ICON_SIZE[0] - 2 * SCALE_FACTOR, i), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,193,pygame_draw,"pygame.draw.line(surface, color, (ICON_SIZE[0] // 2, ICON_SIZE[1] // 2), end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,201,pygame_draw,"pygame.draw.polygon(surface, color, points)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,206,pygame_draw,"pygame.draw.line(surface, color, (0, 0), (ICON_SIZE[0], ICON_SIZE[1]), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,207,pygame_draw,"pygame.draw.line(surface, color, (0, ICON_SIZE[1]), (ICON_SIZE[0], 0), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,212,pygame_draw,"pygame.draw.rect(surface, color, (4 * SCALE_FACTOR, 4 * SCALE_FACTOR, 12 * SCALE_FACTOR, 12 * SCALE_FACTOR))"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,213,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255), (ICON_SIZE[0] // 2, ICON_SIZE[1] // 2), 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,218,pygame_draw,"pygame.draw.polygon(surface, color, [(2 * SCALE_FACTOR, 18 * SCALE_FACTOR), (10 * SCALE_FACTOR, 2 * SCALE_FACTOR), (18 * SCALE_FACTOR, 18 * SCALE_FACTOR)])"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,219,pygame_draw,"pygame.draw.circle(surface, (0, 0, 0), (10 * SCALE_FACTOR, 10 * SCALE_FACTOR), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,224,pygame_draw,"pygame.draw.circle(surface, color, (ICON_SIZE[0] // 2, ICON_SIZE[1] // 2), 8 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,225,pygame_draw,"pygame.draw.line(surface, (0, 0, 0), (0, ICON_SIZE[1] // 2), (ICON_SIZE[0], ICON_SIZE[1] // 2), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,226,pygame_draw,"pygame.draw.line(surface, (0, 0, 0), (ICON_SIZE[0] // 2, 0), (ICON_SIZE[0] // 2, ICON_SIZE[1]), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,231,pygame_draw,"pygame.draw.polygon(surface, color, [(2 * SCALE_FACTOR, 18 * SCALE_FACTOR), (18 * SCALE_FACTOR, 18 * SCALE_FACTOR), (10 * SCALE_FACTOR, 2 * SCALE_FACTOR)])"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,232,pygame_draw,"pygame.draw.line(surface, (0, 0, 0), (2 * SCALE_FACTOR, 18 * SCALE_FACTOR), (18 * SCALE_FACTOR, 18 * SCALE_FACTOR), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,240,pygame_draw,"pygame.draw.line(surface, color, (ICON_SIZE[0] // 2, ICON_SIZE[1] // 2), end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,245,pygame_draw,"pygame.draw.arc(surface, color, (2 * SCALE_FACTOR, 2 * SCALE_FACTOR, ICON_SIZE[0] - 4 * SCALE_FACTOR, ICON_SIZE[1] - 4 * SCALE_FACTOR), 0, 3.14, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,246,pygame_draw,"pygame.draw.arc(surface, color, (4 * SCALE_FACTOR, 4 * SCALE_FACTOR, ICON_SIZE[0] - 8 * SCALE_FACTOR, ICON_SIZE[1] - 8 * SCALE_FACTOR), 3.14, 6.28, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,251,pygame_draw,"pygame.draw.circle(surface, color, (ICON_SIZE[0] // 2, ICON_SIZE[1] // 2), 8 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,255,pygame_draw,"pygame.draw.line(surface, (255, 255, 255), (ICON_SIZE[0] // 2, ICON_SIZE[1] // 2), end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,260,pygame_draw,"pygame.draw.polygon(surface, color, [(10 * SCALE_FACTOR, 0), (15 * SCALE_FACTOR, 7 * SCALE_FACTOR), (5 * SCALE_FACTOR, 7 * SCALE_FACTOR)])"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,261,pygame_draw,"pygame.draw.polygon(surface, color, [(10 * SCALE_FACTOR, 20 * SCALE_FACTOR), (5 * SCALE_FACTOR, 13 * SCALE_FACTOR), (15 * SCALE_FACTOR, 13 * SCALE_FACTOR)])"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,266,pygame_draw,"pygame.draw.line(surface, color, (2 * SCALE_FACTOR, 10 * SCALE_FACTOR), (18 * SCALE_FACTOR, 10 * SCALE_FACTOR), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,267,pygame_draw,"pygame.draw.line(surface, (255, 255, 255), (5 * SCALE_FACTOR, 8 * SCALE_FACTOR), (15 * SCALE_FACTOR, 12 * SCALE_FACTOR), SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,272,pygame_draw,"pygame.draw.polygon(surface, color, [(10 * SCALE_FACTOR, 0), (15 * SCALE_FACTOR, 10 * SCALE_FACTOR), (10 * SCALE_FACTOR, 8 * SCALE_FACTOR), (5 * SCALE_FACTOR, 10 * SCALE_FACTOR)])"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,273,pygame_draw,"pygame.draw.polygon(surface, color, [(10 * SCALE_FACTOR, 20 * SCALE_FACTOR), (15 * SCALE_FACTOR, 10 * SCALE_FACTOR), (10 * SCALE_FACTOR, 12 * SCALE_FACTOR), (5 * SCALE_FACTOR, 10 * SCALE_FACTOR)])"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,278,pygame_draw,"pygame.draw.polygon(surface, color, [(10 * SCALE_FACTOR, 0), (13 * SCALE_FACTOR, 8 * SCALE_FACTOR), (7 * SCALE_FACTOR, 8 * SCALE_FACTOR), (10 * SCALE_FACTOR, 20 * SCALE_FACTOR)])"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,283,pygame_draw,"pygame.draw.line(surface, color, (ICON_SIZE[0] // 2, 0), (ICON_SIZE[0] // 2, ICON_SIZE[1]), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,284,pygame_draw,"pygame.draw.line(surface, color, (0, ICON_SIZE[1] // 2), (ICON_SIZE[0], ICON_SIZE[1] // 2), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,285,pygame_draw,"pygame.draw.circle(surface, color, (ICON_SIZE[0] // 2, ICON_SIZE[1] // 2), 3 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,290,pygame_draw,"pygame.draw.circle(surface, color, (ICON_SIZE[0] // 2, ICON_SIZE[1] // 2), 8 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,291,pygame_draw,"pygame.draw.line(surface, (0, 0, 0), (ICON_SIZE[0] // 2, 0), (ICON_SIZE[0] // 2, ICON_SIZE[1]), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,292,pygame_draw,"pygame.draw.line(surface, (0, 0, 0), (0, ICON_SIZE[1] // 2), (ICON_SIZE[0], ICON_SIZE[1] // 2), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,297,pygame_draw,"pygame.draw.polygon(surface, color, [(10 * SCALE_FACTOR, 0), (15 * SCALE_FACTOR, 5 * SCALE_FACTOR), (10 * SCALE_FACTOR, 10 * SCALE_FACTOR), (5 * SCALE_FACTOR, 5 * SCALE_FACTOR)])"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,298,pygame_draw,"pygame.draw.polygon(surface, color, [(10 * SCALE_FACTOR, 20 * SCALE_FACTOR), (15 * SCALE_FACTOR, 15 * SCALE_FACTOR), (10 * SCALE_FACTOR, 10 * SCALE_FACTOR), (5 * SCALE_FACTOR, 15 * SCALE_FACTOR)])"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,304,pygame_draw,"pygame.draw.line(surface, color, (i * 5 * SCALE_FACTOR, 0), (i * 5 * SCALE_FACTOR, ICON_SIZE[1]), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,316,pygame_draw,"pygame.draw.circle(surface, color, center, ICON_SIZE[0] // 2 - 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,325,pygame_draw,"pygame.draw.circle(surface, ember_color, (x, y), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,329,pygame_draw,"pygame.draw.circle(surface, (color[0]//(i+1), color[1]//(i+1), color[2]//(i+1)), center, (ICON_SIZE[0]//2 - 2 * SCALE_FACTOR) - i*2*SCALE_FACTOR, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,351,pygame_draw,"pygame.draw.polygon(surface, flame_color, points)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,363,pygame_draw,"pygame.draw.circle(surface, color, (ICON_SIZE[0]//2, ICON_SIZE[1]//2 + 2 * SCALE_FACTOR), 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,366,pygame_draw,"pygame.draw.ellipse(surface, color, (ICON_SIZE[0]//2 - 4 * SCALE_FACTOR, ICON_SIZE[1]//2, 8 * SCALE_FACTOR, 4 * SCALE_FACTOR))"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,369,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255), (ICON_SIZE[0]//2 - 2 * SCALE_FACTOR, ICON_SIZE[1]//2 - 2 * SCALE_FACTOR), 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,370,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255), (ICON_SIZE[0]//2 + 2 * SCALE_FACTOR, ICON_SIZE[1]//2 - 2 * SCALE_FACTOR), 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,390,pygame_draw,"pygame.draw.polygon(surface, color, main_arrow)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,399,pygame_draw,"pygame.draw.polygon(surface, color, rotated_arrow)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,414,pygame_draw,"pygame.draw.circle(surface, target_colors[i % 2], center, 8 * SCALE_FACTOR - i * 3 * SCALE_FACTOR, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,423,pygame_draw,"pygame.draw.polygon(surface, missile_color, missile)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,426,pygame_draw,"pygame.draw.line(surface, missile_color, (center[0], center[1] - 5 * SCALE_FACTOR), (center[0], center[1] + 5 * SCALE_FACTOR), 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,440,pygame_draw,"pygame.draw.ellipse(surface, (169, 169, 169), shield_rect, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,443,pygame_draw,"pygame.draw.line(surface, color, (center[0] - 8 * SCALE_FACTOR, center[1]), (center[0] + 8 * SCALE_FACTOR, center[1]), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,444,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,461,pygame_draw,"pygame.draw.line(surface, (105, 105, 105), (wall_x, 2 * SCALE_FACTOR), (wall_x, ICON_SIZE[1] - 2 * SCALE_FACTOR), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,464,pygame_draw,"pygame.draw.line(surface, color, (wall_x - 10 * SCALE_FACTOR, ICON_SIZE[1]//2), (wall_x, ICON_SIZE[1]//2), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,465,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,472,pygame_draw,"pygame.draw.line(surface, color, (wall_x, ICON_SIZE[1]//2), (wall_x + 6 * SCALE_FACTOR, ICON_SIZE[1]//2 - 4 * SCALE_FACTOR), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,473,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,479,pygame_draw,"pygame.draw.line(surface, color, (wall_x, ICON_SIZE[1]//2), (wall_x + 6 * SCALE_FACTOR, ICON_SIZE[1]//2 + 4 * SCALE_FACTOR), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,480,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,499,pygame_draw,"pygame.draw.circle(surface, spiral_color, center, 8 * SCALE_FACTOR - i * 2 * SCALE_FACTOR, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,500,pygame_draw,"pygame.draw.line(surface, spiral_color, center, ("
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,507,pygame_draw,"pygame.draw.polygon(surface, arrow_color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,512,pygame_draw,"pygame.draw.polygon(surface, arrow_color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,529,pygame_draw,"pygame.draw.arc(surface, color, (4 * SCALE_FACTOR, ICON_SIZE[1]//2 - 4 * SCALE_FACTOR, 12 * SCALE_FACTOR, 8 * SCALE_FACTOR), math.pi, 0, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,537,pygame_draw,"pygame.draw.polygon(surface, color, arrow)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,550,pygame_draw,"pygame.draw.circle(surface, color, center, 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,558,pygame_draw,"pygame.draw.circle(surface, color, end_pos, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,571,pygame_draw,"pygame.draw.circle(surface, color, (ICON_SIZE[0]//2, ICON_SIZE[1]//2), 6 * SCALE_FACTOR + i * 4 * SCALE_FACTOR, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,575,blit,"surface.blit(snail_icon, (0,0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,588,pygame_draw,"pygame.draw.circle(surface, color, (ICON_SIZE[0]//2, ICON_SIZE[1]//2 - 2 * SCALE_FACTOR), head_radius)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,590,pygame_draw,"pygame.draw.circle(surface, (0, 0, 0), (ICON_SIZE[0]//2 - 2 * SCALE_FACTOR, ICON_SIZE[1]//2 - 4 * SCALE_FACTOR), 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,591,pygame_draw,"pygame.draw.circle(surface, (0, 0, 0), (ICON_SIZE[0]//2 + 2 * SCALE_FACTOR, ICON_SIZE[1]//2 - 4 * SCALE_FACTOR), 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,600,pygame_draw,"pygame.draw.polygon(surface, heart_color, heart_points)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,601,pygame_draw,"pygame.draw.circle(surface, heart_color, (ICON_SIZE[0]//2 - 4 * SCALE_FACTOR, ICON_SIZE[1]//2 + 8 * SCALE_FACTOR), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,602,pygame_draw,"pygame.draw.circle(surface, heart_color, (ICON_SIZE[0]//2 + 4 * SCALE_FACTOR, ICON_SIZE[1]//2 + 8 * SCALE_FACTOR), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,616,pygame_draw,"pygame.draw.circle(surface, color, center, head_radius)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,617,pygame_draw,"pygame.draw.circle(surface, (0,0,0), (center[0]-2 * SCALE_FACTOR, center[1]-2 * SCALE_FACTOR), 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,618,pygame_draw,"pygame.draw.circle(surface, (0,0,0), (center[0]+2 * SCALE_FACTOR, center[1]-2 * SCALE_FACTOR), 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,627,pygame_draw,"pygame.draw.polygon(surface, (255, 255, 255), arrow)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,647,pygame_draw,"pygame.draw.circle(surface, enemy_color, pos, 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,648,pygame_draw,"pygame.draw.line(surface, enemy_color, (pos[0], pos[1]+4 * SCALE_FACTOR), (pos[0], pos[1]+8 * SCALE_FACTOR), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,651,pygame_draw,"pygame.draw.line(surface, (255, 255, 255), (ICON_SIZE[0]//2 - 6 * SCALE_FACTOR, ICON_SIZE[1]//2 - 6 * SCALE_FACTOR),"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,661,update,EFFECT_DESIGNS.update({
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,669,update,EFFECT_DESIGNS.update({
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,677,update,EFFECT_DESIGNS.update({
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,685,update,EFFECT_DESIGNS.update({
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,704,pygame_draw,"pygame.draw.polygon(surface, flame_color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,718,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,726,pygame_draw,"pygame.draw.line(surface, color,"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,739,pygame_draw,"pygame.draw.circle(surface, color, center, 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,747,pygame_draw,"pygame.draw.line(surface, color, center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,748,pygame_draw,"pygame.draw.circle(surface, color, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,758,pygame_draw,"pygame.draw.circle(surface, color, (center[0] - 4 * SCALE_FACTOR, center[1] - 2 * SCALE_FACTOR), 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,759,pygame_draw,"pygame.draw.circle(surface, color, (center[0], center[1] - 2 * SCALE_FACTOR), 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,760,pygame_draw,"pygame.draw.circle(surface, color, (center[0] + 4 * SCALE_FACTOR, center[1] - 2 * SCALE_FACTOR), 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,761,pygame_draw,"pygame.draw.rect(surface, color, (center[0] - 6 * SCALE_FACTOR, center[1] - 2 * SCALE_FACTOR, 12 * SCALE_FACTOR, 6 * SCALE_FACTOR))"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,765,pygame_draw,"pygame.draw.polygon(surface, bolt_color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,771,pygame_draw,"pygame.draw.polygon(surface, bolt_color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,795,pygame_draw,"pygame.draw.line(surface, color, center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,798,pygame_draw,"pygame.draw.circle(surface, color, center, 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,813,pygame_draw,"pygame.draw.line(surface, color, center, tip, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,821,pygame_draw,"pygame.draw.line(surface, color, tip, branch_tip, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,833,pygame_draw,"pygame.draw.ellipse(surface, color,"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,838,pygame_draw,"pygame.draw.circle(surface, (255, 255, 224), center, 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,848,pygame_draw,"pygame.draw.circle(surface, (105, 105, 105), (center[0] - 4 * SCALE_FACTOR, center[1] - 2 * SCALE_FACTOR), 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,849,pygame_draw,"pygame.draw.circle(surface, (105, 105, 105), (center[0], center[1] - 2 * SCALE_FACTOR), 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,850,pygame_draw,"pygame.draw.circle(surface, (105, 105, 105), (center[0] + 4 * SCALE_FACTOR, center[1] - 2 * SCALE_FACTOR), 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,851,pygame_draw,"pygame.draw.rect(surface, (105, 105, 105), (center[0] - 6 * SCALE_FACTOR, center[1] - 2 * SCALE_FACTOR, 12 * SCALE_FACTOR, 6 * SCALE_FACTOR))"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,854,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,874,pygame_draw,"pygame.draw.polygon(surface, flame_color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,881,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,886,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,905,pygame_draw,"pygame.draw.line(surface, color, center, tip, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,913,pygame_draw,"pygame.draw.line(surface, color, tip, branch_tip, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,925,pygame_draw,"pygame.draw.ellipse(surface, color,"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,930,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255), center, 3 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,931,pygame_draw,"pygame.draw.line(surface, (255, 255, 255), (center[0] - 2 * SCALE_FACTOR, center[1]),"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,933,pygame_draw,"pygame.draw.line(surface, (255, 255, 255), (center[0], center[1] - 2 * SCALE_FACTOR),"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,944,pygame_draw,"pygame.draw.line(surface, color, (center[0], center[1] - 6 * SCALE_FACTOR),"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,946,pygame_draw,"pygame.draw.line(surface, color, (center[0] - 4 * SCALE_FACTOR, center[1] - 6 * SCALE_FACTOR),"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,948,pygame_draw,"pygame.draw.line(surface, color, (center[0] - 4 * SCALE_FACTOR, center[1] + 6 * SCALE_FACTOR),"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,953,pygame_draw,"pygame.draw.circle(surface, color, center, radius, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,968,pygame_draw,"pygame.draw.line(surface, color,"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,971,pygame_draw,"pygame.draw.line(surface, color,"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,974,pygame_draw,"pygame.draw.line(surface, color,"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,984,pygame_draw,"pygame.draw.line(surface, color, center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,996,pygame_draw,"pygame.draw.arc(surface, wave_color,"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1002,pygame_draw,"pygame.draw.line(surface, (0, 0, 0),"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1005,pygame_draw,"pygame.draw.polygon(surface, (0, 0, 0), ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1019,pygame_draw,"pygame.draw.rect(surface, color, (center[0] - 2 * SCALE_FACTOR, center[1], 4 * SCALE_FACTOR, 8 * SCALE_FACTOR))"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1022,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1027,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1041,pygame_draw,"pygame.draw.circle(surface, (105, 105, 105), (center[0] - 4 * SCALE_FACTOR, center[1] - 2 * SCALE_FACTOR), 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1042,pygame_draw,"pygame.draw.circle(surface, (105, 105, 105), (center[0], center[1] - 2 * SCALE_FACTOR), 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1043,pygame_draw,"pygame.draw.circle(surface, (105, 105, 105), (center[0] + 4 * SCALE_FACTOR, center[1] - 2 * SCALE_FACTOR), 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1044,pygame_draw,"pygame.draw.rect(surface, (105, 105, 105), (center[0] - 6 * SCALE_FACTOR, center[1] - 2 * SCALE_FACTOR, 12 * SCALE_FACTOR, 6 * SCALE_FACTOR))"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1049,pygame_draw,"pygame.draw.polygon(surface, bolt_color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1062,update,EFFECT_DESIGNS.update({
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1070,update,EFFECT_DESIGNS.update({
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1078,update,EFFECT_DESIGNS.update({
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1104,pygame_draw,"pygame.draw.polygon(surface, flame_color, points)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1112,pygame_draw,"pygame.draw.circle(surface, ember_color, (x, y), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1128,pygame_draw,"pygame.draw.line(surface, color, center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1138,pygame_draw,"pygame.draw.line(surface, color, end_pos, branch_end, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1141,pygame_draw,"pygame.draw.circle(surface, color, center, 3 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1151,pygame_draw,"pygame.draw.rect(surface, color, (center[0] - 2 * SCALE_FACTOR, center[1], 4 * SCALE_FACTOR, 8 * SCALE_FACTOR))"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1154,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1159,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1168,pygame_draw,"pygame.draw.circle(surface, aura_color, center, radius, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1183,pygame_draw,"pygame.draw.line(surface, color, center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1186,pygame_draw,"pygame.draw.circle(surface, color, center, 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1187,pygame_draw,"pygame.draw.circle(surface, (255, 255, 224), center, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1201,pygame_draw,"pygame.draw.circle(surface, color, center, 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1207,pygame_draw,"pygame.draw.line(surface, color, center, explosion_end, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1208,pygame_draw,"pygame.draw.circle(surface, color, explosion_end, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1213,pygame_draw,"pygame.draw.circle(surface, flame_color, center, 8 * SCALE_FACTOR + i * 2 * SCALE_FACTOR, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1226,pygame_draw,"pygame.draw.arc(surface, wave_color,"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1238,pygame_draw,"pygame.draw.polygon(surface, trident_color, trident_points)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1239,pygame_draw,"pygame.draw.line(surface, trident_color, trident_base, (center_x, center_y + 6 * SCALE_FACTOR), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1249,pygame_draw,"pygame.draw.rect(surface, color, (center[0] - 2 * SCALE_FACTOR, center[1], 4 * SCALE_FACTOR, 8 * SCALE_FACTOR))"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1250,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1255,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1267,pygame_draw,"pygame.draw.line(surface, color, center, tip, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1268,pygame_draw,"pygame.draw.circle(surface, (0, 0, 0), tip, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1278,pygame_draw,"pygame.draw.line(surface, color, (center[0], center[1] - 8 * SCALE_FACTOR),"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1280,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1285,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1293,pygame_draw,"pygame.draw.circle(surface, color, center, radius, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1307,pygame_draw,"pygame.draw.circle(surface, color, center, 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1316,pygame_draw,"pygame.draw.line(surface, color, start_pos, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1328,pygame_draw,"pygame.draw.line(surface, color, link_start, link_end, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1329,pygame_draw,"pygame.draw.circle(surface, color, link_start, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1330,pygame_draw,"pygame.draw.circle(surface, color, link_end, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1340,pygame_draw,"pygame.draw.circle(surface, color, center, 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1346,pygame_draw,"pygame.draw.circle(surface, ring_color, center, 6 * SCALE_FACTOR + i * 4 * SCALE_FACTOR, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1354,pygame_draw,"pygame.draw.line(surface, color, center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1364,pygame_draw,"pygame.draw.circle(surface, color, center, 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1365,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255), center, 6 * SCALE_FACTOR, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1366,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255), (center[0], center[1] - 3 * SCALE_FACTOR), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1367,pygame_draw,"pygame.draw.circle(surface, color, (center[0], center[1] + 3 * SCALE_FACTOR), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1375,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255), star_pos, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1385,pygame_draw,"pygame.draw.circle(surface, color, center, 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1393,pygame_draw,"pygame.draw.line(surface, color, center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1398,pygame_draw,"pygame.draw.circle(surface, color, center, radius, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1408,pygame_draw,"pygame.draw.circle(surface, (105, 105, 105), (center[0] - 4 * SCALE_FACTOR, center[1] - 2 * SCALE_FACTOR), 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1409,pygame_draw,"pygame.draw.circle(surface, (105, 105, 105), (center[0], center[1] - 2 * SCALE_FACTOR), 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1410,pygame_draw,"pygame.draw.circle(surface, (105, 105, 105), (center[0] + 4 * SCALE_FACTOR, center[1] - 2 * SCALE_FACTOR), 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1411,pygame_draw,"pygame.draw.rect(surface, (105, 105, 105), (center[0] - 6 * SCALE_FACTOR, center[1] - 2 * SCALE_FACTOR, 12 * SCALE_FACTOR, 6 * SCALE_FACTOR))"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1423,pygame_draw,"pygame.draw.polygon(surface, color, bolt)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1437,pygame_draw,"pygame.draw.circle(surface, color, center, 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1443,pygame_draw,"pygame.draw.line(surface, color, center, explosion_end, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1444,pygame_draw,"pygame.draw.circle(surface, color, explosion_end, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1449,pygame_draw,"pygame.draw.circle(surface, flame_color, center, 8 * SCALE_FACTOR + i * 2 * SCALE_FACTOR, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1462,pygame_draw,"pygame.draw.arc(surface, wave_color,"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1474,pygame_draw,"pygame.draw.polygon(surface, trident_color, trident_points)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1475,pygame_draw,"pygame.draw.line(surface, trident_color, trident_base, (center_x, center_y + 6 * SCALE_FACTOR), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1485,pygame_draw,"pygame.draw.rect(surface, color, (center[0] - 2 * SCALE_FACTOR, center[1], 4 * SCALE_FACTOR, 8 * SCALE_FACTOR))"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1486,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1491,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1503,pygame_draw,"pygame.draw.line(surface, color, center, tip, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1504,pygame_draw,"pygame.draw.circle(surface, (0, 0, 0), tip, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1514,pygame_draw,"pygame.draw.line(surface, color, (center[0], center[1] - 8 * SCALE_FACTOR),"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1516,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1521,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1529,pygame_draw,"pygame.draw.circle(surface, color, center, radius, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1543,pygame_draw,"pygame.draw.circle(surface, color, center, 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1552,pygame_draw,"pygame.draw.line(surface, color, start_pos, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1564,pygame_draw,"pygame.draw.line(surface, color, link_start, link_end, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1565,pygame_draw,"pygame.draw.circle(surface, color, link_start, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1566,pygame_draw,"pygame.draw.circle(surface, color, link_end, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1576,pygame_draw,"pygame.draw.circle(surface, color, center, 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1582,pygame_draw,"pygame.draw.circle(surface, ring_color, center, 6 * SCALE_FACTOR + i * 4 * SCALE_FACTOR, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1590,pygame_draw,"pygame.draw.line(surface, color, center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1600,pygame_draw,"pygame.draw.circle(surface, color, center, 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1601,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255), center, 6 * SCALE_FACTOR, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1602,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255), (center[0], center[1] - 3 * SCALE_FACTOR), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1603,pygame_draw,"pygame.draw.circle(surface, color, (center[0], center[1] + 3 * SCALE_FACTOR), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1611,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255), star_pos, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1621,pygame_draw,"pygame.draw.circle(surface, color, center, 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1629,pygame_draw,"pygame.draw.line(surface, color, center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1633,pygame_draw,"pygame.draw.circle(surface, color, center, radius, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1643,pygame_draw,"pygame.draw.circle(surface, (105, 105, 105), (center[0] - 4 * SCALE_FACTOR, center[1] - 2 * SCALE_FACTOR), 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1644,pygame_draw,"pygame.draw.circle(surface, (105, 105, 105), (center[0], center[1] - 2 * SCALE_FACTOR), 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1645,pygame_draw,"pygame.draw.circle(surface, (105, 105, 105), (center[0] + 4 * SCALE_FACTOR, center[1] - 2 * SCALE_FACTOR), 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1646,pygame_draw,"pygame.draw.rect(surface, (105, 105, 105), (center[0] - 6 * SCALE_FACTOR, center[1] - 2 * SCALE_FACTOR, 12 * SCALE_FACTOR, 6 * SCALE_FACTOR))"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1658,pygame_draw,"pygame.draw.polygon(surface, color, bolt)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1666,update,EFFECT_DESIGNS.update({
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1675,update,EFFECT_DESIGNS.update({
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1692,pygame_draw,"pygame.draw.circle(surface, color, center, 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1701,pygame_draw,"pygame.draw.line(surface, color, start_pos, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1713,pygame_draw,"pygame.draw.line(surface, color, link_start, link_end, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1714,pygame_draw,"pygame.draw.circle(surface, color, link_start, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1715,pygame_draw,"pygame.draw.circle(surface, color, link_end, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1725,pygame_draw,"pygame.draw.circle(surface, color, center, 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1731,pygame_draw,"pygame.draw.circle(surface, ring_color, center, 6 * SCALE_FACTOR + i * 4 * SCALE_FACTOR, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1739,pygame_draw,"pygame.draw.line(surface, color, center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1749,pygame_draw,"pygame.draw.circle(surface, color, center, 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1750,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255), center, 6 * SCALE_FACTOR, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1751,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255), (center[0], center[1] - 3 * SCALE_FACTOR), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1752,pygame_draw,"pygame.draw.circle(surface, color, (center[0], center[1] + 3 * SCALE_FACTOR), 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1760,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255), star_pos, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1770,pygame_draw,"pygame.draw.circle(surface, color, center, 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1778,pygame_draw,"pygame.draw.line(surface, color, center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1782,pygame_draw,"pygame.draw.circle(surface, color, center, radius, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1792,pygame_draw,"pygame.draw.circle(surface, (105, 105, 105), (center[0] - 4 * SCALE_FACTOR, center[1] - 2 * SCALE_FACTOR), 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1793,pygame_draw,"pygame.draw.circle(surface, (105, 105, 105), (center[0], center[1] - 2 * SCALE_FACTOR), 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1794,pygame_draw,"pygame.draw.circle(surface, (105, 105, 105), (center[0] + 4 * SCALE_FACTOR, center[1] - 2 * SCALE_FACTOR), 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1795,pygame_draw,"pygame.draw.rect(surface, (105, 105, 105), (center[0] - 6 * SCALE_FACTOR, center[1] - 2 * SCALE_FACTOR, 12 * SCALE_FACTOR, 6 * SCALE_FACTOR))"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1807,pygame_draw,"pygame.draw.polygon(surface, color, bolt)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1821,pygame_draw,"pygame.draw.circle(surface, color, center, 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1822,pygame_draw,"pygame.draw.polygon(surface, (255, 140, 0), ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1834,pygame_draw,"pygame.draw.line(surface, (255, 69, 0), center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1835,pygame_draw,"pygame.draw.circle(surface, (255, 215, 0), end_pos, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1850,pygame_draw,"pygame.draw.line(surface, color, center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1858,pygame_draw,"pygame.draw.line(surface, color, end_pos, branch_tip, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1861,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255), center, 3 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1871,pygame_draw,"pygame.draw.circle(surface, color, center, 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1872,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1884,pygame_draw,"pygame.draw.line(surface, (0, 100, 0), center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1885,pygame_draw,"pygame.draw.circle(surface, (0, 255, 0), end_pos, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1895,pygame_draw,"pygame.draw.circle(surface, color, center, 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1903,pygame_draw,"pygame.draw.line(surface, color, center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1904,pygame_draw,"pygame.draw.circle(surface, (255, 255, 224), end_pos, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1907,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255), center, 3 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1921,update,EFFECT_DESIGNS.update({
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1929,update,EFFECT_DESIGNS.update({
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1947,pygame_draw,"pygame.draw.circle(surface, burst_color, center, 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1955,pygame_draw,"pygame.draw.line(surface, burst_color, center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1956,pygame_draw,"pygame.draw.circle(surface, (255, 140, 0), end_pos, 2 * SCALE_FACTOR)  # Ember color"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1967,pygame_draw,"pygame.draw.circle(surface, burst_color, center, 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1975,pygame_draw,"pygame.draw.line(surface, burst_color, center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1976,pygame_draw,"pygame.draw.circle(surface, (173, 216, 230), end_pos, 2 * SCALE_FACTOR)  # Light blue for ice"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1987,pygame_draw,"pygame.draw.circle(surface, burst_color, center, 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1995,pygame_draw,"pygame.draw.line(surface, burst_color, center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,1996,pygame_draw,"pygame.draw.circle(surface, (144, 238, 144), end_pos, 2 * SCALE_FACTOR)  # Light green for vibrancy"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2007,pygame_draw,"pygame.draw.circle(surface, burst_color, center, 4 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2015,pygame_draw,"pygame.draw.line(surface, burst_color, center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2016,pygame_draw,"pygame.draw.circle(surface, (255, 255, 224), end_pos, 2 * SCALE_FACTOR)  # Light yellow for radiance"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2031,pygame_draw,"pygame.draw.polygon(surface, (255, 0, 0), ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2038,pygame_draw,"pygame.draw.polygon(surface, (0, 0, 255), ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2045,pygame_draw,"pygame.draw.line(surface, (255, 255, 255),"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2048,pygame_draw,"pygame.draw.line(surface, (255, 255, 255),"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2061,pygame_draw,"pygame.draw.polygon(surface, (255, 0, 0), ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2068,pygame_draw,"pygame.draw.polygon(surface, (0, 128, 0), ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2075,pygame_draw,"pygame.draw.polygon(surface, (255, 255, 255), ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2090,pygame_draw,"pygame.draw.polygon(surface, (0, 0, 255), ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2102,pygame_draw,"pygame.draw.line(surface, (255, 255, 0), center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2105,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255), center, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2119,pygame_draw,"pygame.draw.circle(surface, color, center, 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2120,pygame_draw,"pygame.draw.polygon(surface, (255, 140, 0), ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2132,pygame_draw,"pygame.draw.line(surface, (255, 69, 0), center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2133,pygame_draw,"pygame.draw.circle(surface, (255, 215, 0), end_pos, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2148,pygame_draw,"pygame.draw.line(surface, color, center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2156,pygame_draw,"pygame.draw.line(surface, color, end_pos, branch_tip, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2159,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255), center, 3 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2169,pygame_draw,"pygame.draw.circle(surface, color, center, 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2170,pygame_draw,"pygame.draw.polygon(surface, color, ["
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2182,pygame_draw,"pygame.draw.line(surface, (0, 100, 0), center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2183,pygame_draw,"pygame.draw.circle(surface, (0, 255, 0), end_pos, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2193,pygame_draw,"pygame.draw.circle(surface, color, center, 6 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2201,pygame_draw,"pygame.draw.line(surface, color, center, end_pos, 2 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2202,pygame_draw,"pygame.draw.circle(surface, (255, 255, 224), end_pos, 1 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\icone_gen.py,2205,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255), center, 3 * SCALE_FACTOR)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\map_color_analyser.py,46,blit,"screen.blit(loading_image, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\map_color_analyser.py,47,pygame_display_update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\map_color_analyser.py,47,update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\map_color_analyser.py,510,blit,"screen.blit(text_surface, (screen.get_width() // 2 - text_surface.get_width() // 2,"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\map_color_analyser.py,512,pygame_display_update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\map_color_analyser.py,512,update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\part_gen.py,32,pygame_draw,"pygame.draw.circle(surface, color, (center[0] * CELL_SIZE, center[1] * CELL_SIZE), radius * CELL_SIZE)"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\part_gen.py,44,pygame_draw,"pygame.draw.line(surface, color, (i * CELL_SIZE, y * CELL_SIZE), (i * CELL_SIZE, (y + 1) * CELL_SIZE))"
+C:/Users/lierm/Documents/Games/ALLV8/src\assets\tools\part_gen.py,50,pygame_draw,"pygame.draw.rect(surface, color, pygame.Rect((start_x + i) * CELL_SIZE, start_y * CELL_SIZE, CELL_SIZE, CELL_SIZE))"
+C:/Users/lierm/Documents/Games/ALLV8/src\config\game_class.py,90,update,self.state_engine.update(events)
+C:/Users/lierm/Documents/Games/ALLV8/src\config\game_class.py,98,blit,"self.screen.blit(current_buffer, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\config\game_class.py,99,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\config\game_class.py,99,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\state_engine.py,51,update,self.current_state.update(events)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\animation.py,21,update,effect.update(dt)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\animations_handler.py,15,update,animation.update(dt)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\base_effects\anim_blue.py,69,update,"triangle.update({'points': points, 'size': size, 'initial_size': size, 'offset_x': x - self.target.rect.left, 'offset_y': y - self.target.rect.top})"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\base_effects\anim_blue.py,91,pygame_draw,"pygame.draw.polygon(overlay, (255, 255, 255, 150), triangle['points'])"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\base_effects\anim_blue.py,92,blit,"surface.blit(overlay, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\base_effects\anim_green.py,49,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255, 100), bubble_pos, int(bubble['radius']))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\base_effects\anim_red.py,34,pygame_draw,"pygame.draw.rect(overlay, (255, 255, 255, self.opacity), overlay.get_rect(), self.thickness)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\base_effects\anim_red.py,35,blit,"surface.blit(overlay, (self.target.rect.left - self.thickness, self.target.rect.top - self.thickness))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\base_effects\anim_yellow.py,36,pygame_draw,"pygame.draw.rect(screen, (255, 255, 0), subshape)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\base_effects\black_hole.py,33,blit,"screen.blit(frame_surface, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\base_effects\black_hole.py,36,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\base_effects\black_hole.py,36,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\base_effects\burn_effect.py,25,pygame_draw,"pygame.draw.rect(screen, self.color, self.target.rect, 3)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\base_effects\freeze_effect.py,25,pygame_draw,"pygame.draw.rect(screen, self.color, self.target.rect, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\base_effects\whirlwind_lightning.py,45,pygame_draw,"pygame.draw.circle(surface, self.color, (int(self.x), int(self.y)), self.radius)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\base_effects\whirlwind_lightning.py,62,pygame_draw,"pygame.draw.line(surface, self.color, (self.x, self.y), (self.end_x, self.end_y), 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\base_effects\whirlwind_lightning.py,90,update,spark.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\base_effects\whirlwind_lightning.py,95,update,lightning.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\base_effects\whirlwind_lightning.py,99,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\base_effects\whirlwind_lightning.py,99,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\gl\gl_plotter.py,100,blit,"target_surface.blit(gl_surf, (0,0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\gl\gpu_visualizer.py,267,update,self.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\gl\main.py,35,pygame_draw,"pygame.draw.circle(self.surface, (255, 0, 0, 128), (int(self.width / 2), int(self.height / 2)), 100)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\gl\main.py,38,pygame_draw,"pygame.draw.rect(self.surface, (0, 255, 0, 128), pygame.Rect(150, 150, 200, 100))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\gl\main.py,140,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\animation\gl\main.py,140,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\display_damage.py,188,blit,"screen.blit(text_info['text'], text_info['position'])"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\display_damage.py,206,blit,"screen.blit(hp_text, position)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\cpcg\aoe_mechanic.py,137,pygame_draw,"pygame.draw.circle(self.aoe_surface, self.color,"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\cpcg\aoe_mechanic.py,141,blit,pygame.display.get_surface().blit(
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\cpcg\aoe_mechanic.py,158,pygame_draw,"pygame.draw.circle(self.aoe_surface, self.color,"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\cpcg\aoe_mechanic.py,162,blit,pygame.display.get_surface().blit(
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\cpcg\aoe_mechanic.py,183,pygame_draw,"pygame.draw.line(self.aoe_surface, self.color, center, end_pos, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\cpcg\aoe_mechanic.py,185,blit,pygame.display.get_surface().blit(
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\cpcg\aoe_mechanic.py,200,pygame_draw,"pygame.draw.circle(self.aoe_surface, self.color,"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\cpcg\aoe_mechanic.py,204,blit,pygame.display.get_surface().blit(
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\cpcg\aoe_mechanic.py,222,pygame_draw,"pygame.draw.circle(self.aoe_surface, self.color,"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\cpcg\aoe_mechanic.py,226,blit,pygame.display.get_surface().blit(
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\cpcg\aoe_mechanic.py,240,pygame_draw,"pygame.draw.circle(self.aoe_surface, self.color,"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\cpcg\aoe_mechanic.py,244,blit,pygame.display.get_surface().blit(
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\cpcg\aoe_mechanic.py,274,pygame_draw,"pygame.draw.line(pygame.display.get_surface(), self.color, segment[0], segment[1], 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\cpcg\aoe_mechanic.py,287,pygame_draw,"pygame.draw.line(pygame.display.get_surface(), self.color, start_pos, end_pos, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\cpcg\chaining_mechanic.py,230,blit,"pygame.display.get_surface().blit(self.trail_surface, trail_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\melee\melee_attack_visuals.py,44,pygame_draw,"pygame.draw.circle(future_area, (255, 255, 255, alpha), (int(range_size), int(range_size)), int(range_size))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\melee\melee_attack_visuals.py,45,blit,"surface.blit(future_area, (player_center[0] - range_size, player_center[1] - range_size))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\melee\melee_attack_visuals.py,51,pygame_draw,"pygame.draw.rect(square_surface, (255, 255, 255, rand_alpha), (0, 0, square['rect'].width, square['rect'].height))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\melee\melee_attack_visuals.py,52,blit,"surface.blit(square_surface, (square['rect'].x, square['rect'].y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\melee\melee_attack_visuals.py,59,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255), (int(particle['pos'][0]), int(particle['pos'][1])), 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\melee\melee_attack_visuals.py,68,pygame_draw,"pygame.draw.circle(flash, (255, 255, 255, 255), (int(current_range), int(current_range)), int(current_range))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\melee\melee_attack_visuals.py,69,blit,"surface.blit(flash, (player_center[0] - current_range, player_center[1] - current_range))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\melee\melee_attack_visuals.py,72,pygame_draw,"pygame.draw.circle(dark, (0, 0, 0, 255), (int(current_range), int(current_range)), int(current_range))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\melee\melee_attack_visuals.py,73,pygame_draw,"pygame.draw.circle(dark, (255, 255, 255, 255), (int(current_range), int(current_range)), int(current_range), 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\melee\melee_attack_visuals.py,74,blit,"surface.blit(dark, (player_center[0] - current_range, player_center[1] - current_range))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\melee\melee_attack_visuals.py,79,pygame_draw,"pygame.draw.line(grid, (255, 255, 255, 128), (x, 0), (x, int(current_range * 2)))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\melee\melee_attack_visuals.py,81,pygame_draw,"pygame.draw.line(grid, (255, 255, 255, 128), (0, y), (int(current_range * 2), y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\melee\melee_attack_visuals.py,82,blit,"surface.blit(grid, (player_center[0] - current_range, player_center[1] - current_range))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\melee\melee_attack_visuals.py,88,pygame_draw,"pygame.draw.rect(sq_surface, (255, 255, 255, 255), (0, 0, square['rect'].width, square['rect'].height))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\melee\melee_attack_visuals.py,89,blit,"surface.blit(sq_surface, (square['rect'].x, square['rect'].y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\ranged\pcg.py,103,update,"attributes.update(rare_effects.get('attributes', {}))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\ranged\pcg.py,104,update,"effects.update(rare_effects.get('effects', {}))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\ranged\pcg.py,410,update,combined_keywords.update(keywords)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\ranged\projectile.py,271,update,self.walkers.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\ranged\projectile.py,330,blit,"combined_image.blit(self.arcs_surface, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\ranged\projectile.py,331,blit,"surface.blit(combined_image, self.rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\ranged\projectile.py,339,update,self.proj_behav.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\combat\ranged\walker_class.py,391,blit,"surface.blit(temp_surface, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\dialogue\dialogue_display.py,83,blit,"main_surface.blit(title_surf, title_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\dialogue\dialogue_display.py,97,blit,"narrator_subsurface.blit(avatar_scaled, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\dialogue\dialogue_display.py,115,blit,"main_surface.blit(avatar_scaled, avatar_rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\dialogue\dialogue_display.py,200,blit,"player_subsurface.blit(line_surf, line_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\dialogue\dialogue_display.py,208,blit,"self.screen.blit(main_surface, (self.main_dialogue_rect.x, self.main_dialogue_rect.y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\dialogue\dialogue_display.py,236,blit,"surf.blit(line_surf, (x_offset, y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\dialogue\dialogue_manager.py,156,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\dialogue\dialogue_manager.py,156,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\dialogue\intro_animation.py,150,pygame_draw,"pygame.draw.rect(surface, (255, 255, 255), rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\dialogue\intro_animation.py,156,pygame_draw,"pygame.draw.rect(surface, (255, 255, 255), rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\dialogue\intro_animation.py,169,blit,"surface.blit(scaled_avatar, rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\dialogue\intro_animation.py,175,blit,"surface.blit(text_surf, text_rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\dialogue\intro_animation.py,184,blit,"surface.blit(scaled_avatar, self.condensed_rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\dialogue\intro_animation.py,193,pygame_draw,"pygame.draw.rect(surface, (255, 255, 255), rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\dialogue\intro_animation.py,196,pygame_draw,"pygame.draw.rect(surface, (255, 255, 255), self.final_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\dialogue\intro_animation.py,210,update,self.update(dt)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\dialogue\intro_animation.py,212,blit,"self.screen.blit(anim_surface, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\dialogue\intro_animation.py,213,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\dialogue\intro_animation.py,213,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\game\draw.py,32,update,UIbar.update(buffer)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\game\draw.py,33,update,game.world_manager.bottom_ui_bar.update(buffer)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\game\draw.py,34,pygame_display_flip,#pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\game\draw.py,34,flip,#pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\game\game_loop.py,55,blit,"game.double_screen.blit(current_buffer, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\game\game_loop.py,58,blit,"screen.blit(game.double_screen, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\game\game_loop.py,59,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\game\game_loop.py,59,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\game\init_game.py,122,update,#self.animation_handler.update(self.clock.get_time())
+C:/Users/lierm/Documents/Games/ALLV8/src\core\game\update.py,15,update,game.all_sprites.update(game)  # Pass game_state to update
+C:/Users/lierm/Documents/Games/ALLV8/src\core\game\update.py,18,update,#game.player.attack_skills.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\game\update.py,21,update,mob.update(game)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\game\update.py,31,update,game.arcade_zone.update(game)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\game\update.py,36,update,skill.update(game)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\custom_inventory_loop.py,54,pygame_display_update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\custom_inventory_loop.py,54,update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\custom_inventory_loop.py,63,update,menu.update([event])  # Ensure menu updates with events
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\custom_inventory_loop.py,121,pygame_display_update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\custom_inventory_loop.py,121,update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\inventory_drawing.py,40,blit,"screen.blit(inventory_title, (title_x, title_y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\inventory_drawing.py,59,blit,"screen.blit(scaled_image, (x_offset, y_position))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\inventory_drawing.py,73,pygame_draw,"pygame.draw.rect(screen, (211, 211, 211), highlight_rect, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\inventory_drawing.py,87,blit,"screen.blit(level_text, (text_x, text_y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\inventory_drawing.py,88,blit,"screen.blit(quantity_text, (text_x, text_y + int(20 / 600 * screen_height)))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\inventory_drawing.py,90,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\inventory_drawing.py,90,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\inventory_drawing.py,101,blit,"outline_image.blit(base_text, (1, 1))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\inventory_drawing.py,103,blit,"outline_image.blit(base_text, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\assemble_grid.py,67,blit,"surface.blit(title_text, (x_offset, y_offset -fontsize))  # Position title above grid"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\assemble_grid.py,98,pygame_draw,"pygame.draw.rect(surface, color, shrink_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\assemble_grid.py,102,pygame_draw,"pygame.draw.rect(surface, (255, 255, 255), grid_rect, 2)  # Grid cell borders"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\assemble_grid.py,106,pygame_draw,"pygame.draw.rect(surface, (255, 255, 0), grid_rect, 3)  # Yellow highlight"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\assemble_grid.py,117,update,self.__dict__.update(state)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\block_color_square.py,67,pygame_draw,"pygame.draw.rect(self.image, color_rgb, rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\block_grid.py,207,blit,"surface.blit(title_text, (self.x_offset, self.y_offset - fontsize))  # Position title above grid"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\block_grid.py,229,pygame_draw,"pygame.draw.line(self.grid_image, (0, 0, 0), start_pos, end_pos, 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\block_grid.py,235,pygame_draw,"pygame.draw.line(self.grid_image, (0, 0, 0), start_pos, end_pos, 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\block_grid.py,245,blit,"self.grid_image.blit(block_image, (pixel_x, pixel_y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\block_grid.py,252,pygame_draw,"pygame.draw.line(surface, (0, 0, 0), start_pos, end_pos, 0)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\block_grid.py,254,pygame_draw,"pygame.draw.line(surface, (50, 50, 50), start_pos, end_pos, 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\block_grid.py,261,pygame_draw,"pygame.draw.line(surface, (0, 0, 0), start_pos, end_pos, 0)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\block_grid.py,263,pygame_draw,"pygame.draw.line(surface, (50, 50, 50), start_pos, end_pos, 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\block_grid.py,277,blit,"surface.blit(highlight_surface, rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\block_grid.py,288,pygame_draw,"pygame.draw.rect(surface, (255, 255, 0), selected_rect, 3)  # Yellow border"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\block_grid.py,298,blit,"surface.blit(block_image, (pixel_x, pixel_y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\block_grid.py,329,blit,"surface.blit(overlay_surface, (pixel_x, pixel_y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\block_inventory.py,51,blit,"screen.blit(block_inv_title, (self.x_offset - 80, self.y_offset - fontsize))  # Title above the inventory"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\block_inventory.py,70,blit,"screen.blit(scaled_image, rect.topleft)  # Draw the scaled block in the inventory slot"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\block_inventory.py,72,pygame_draw,"pygame.draw.rect(screen, (255, 255, 255), rect, 2)  # Draw the slot border"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\block_inventory.py,76,pygame_draw,"pygame.draw.rect(screen, (255, 255, 0), rect, 3)  # Highlight selected slot"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\custom_assemble_loop.py,42,blit,"screen.blit(double_buffer, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\custom_assemble_loop.py,43,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\custom_assemble_loop.py,43,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\draw_assemble_interface.py,36,pygame_display_update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\draw_assemble_interface.py,36,update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\draw_assemble_interface.py,46,pygame_draw,"pygame.draw.rect(screen, button['color'], button['rect'])"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\block\draw_assemble_interface.py,47,blit,"screen.blit(button['text'], (button['rect'].x + 10*fx, button['rect'].y + 10*fy))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\custom_melt_test_loop.py,36,update,canvas.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\custom_melt_test_loop.py,39,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\custom_melt_test_loop.py,39,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\melt_canvas.py,173,pygame_draw,"pygame.draw.rect(screen, color, rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\melt_canvas.py,178,pygame_draw,"pygame.draw.rect(ripple_surf, ripple_color, ripple_surf.get_rect(), 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\melt_canvas.py,179,blit,"screen.blit(ripple_surf, rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\melt_interface.py,12,blit,"screen.blit(title_text, title_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\melt_interface.py,17,blit,"screen.blit(canvas_title, (sw//2 - 100, sh//2 - (canvas.grid_size * canvas.cell_size)//2 - 40))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\melt_interface.py,19,blit,"screen.blit(inv_title, (sw - 150, 20))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\melt_interface.py,21,blit,"screen.blit(inv_title, (sw - 150, 20))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\melt_interface.py,26,pygame_draw,"pygame.draw.rect(screen, (255, 255, 255), outline_rect, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\melt_interface.py,30,blit,"screen.blit(drop_text, (sw//2 - 50, offset[1] - 50))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\melt_interface.py,40,pygame_draw,"pygame.draw.rect(screen, (200,200,200), rect, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\melt_interface.py,44,pygame_draw,"pygame.draw.rect(screen, vial.get_color(), fill_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\melt_interface.py,46,pygame_draw,"pygame.draw.rect(screen, (255,255,0), rect, 3)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\melt_interface.py,51,blit,"screen.blit(vial_info, (50, sh - 150))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\melt_interface.py,52,blit,"screen.blit(quantity_info, (50, sh - 120))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\melt_interface.py,61,pygame_draw,"pygame.draw.rect(screen, (80, 80, 80), btn[""rect""])"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\melt_interface.py,63,blit,"screen.blit(btn[""text""], text_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\melt_interface.py,64,pygame_display_update,#pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\melt\melt_interface.py,64,update,#pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\custom_fuse_loop.py,36,blit,"screen.blit(double_buffer, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\custom_fuse_loop.py,37,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\custom_fuse_loop.py,37,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\custom_fuse_loop.py,51,blit,"screen.blit(double_buffer, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\custom_fuse_loop.py,52,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\custom_fuse_loop.py,52,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\draw_fuse_interface.py,58,pygame_draw,"pygame.draw.rect(screen, button_color, button['rect'])"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\draw_fuse_interface.py,62,blit,"screen.blit(button['text'], text_rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\draw_fuse_interface.py,69,pygame_display_update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\draw_fuse_interface.py,69,update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_color_square.py,67,update,self.__dict__.update(state)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_grid.py,358,pygame_draw,"pygame.draw.rect(screen, (255, 255, 255), rect, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_grid.py,368,blit,"screen.blit(img, (rect.x, rect.y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_grid.py,369,blit,"self.grid_image.blit(img, (rect.x - self.grid_posX, rect.y - self.grid_posY))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_grid.py,371,pygame_draw,"pygame.draw.rect(screen, (255, 255, 0), rect, 3)  # Yellow highlight"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_grid.py,392,blit,"screen.blit(square.image, (rect.x, rect.y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_grid.py,418,pygame_draw,"#pygame.draw.rect(surface, (255, 255, 255), rect, 2)  # White grid lines"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_grid.py,425,blit,"surface.blit(img, rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,214,pygame_draw,"pygame.draw.rect(screen, button_color, button_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,216,pygame_draw,"pygame.draw.rect(screen, button_color, button_rect, 2)  # Draw outline for inactive button"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,219,pygame_draw,"pygame.draw.rect(screen, (150, 150, 150), slider_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,225,pygame_draw,"pygame.draw.rect(screen, (200, 200, 200), (min_level_pos, slider_rect.y - margin_s, margin_s, slider_height + margin_slider))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,226,pygame_draw,"pygame.draw.rect(screen, (200, 200, 200), (max_level_pos, slider_rect.y - margin_s, margin_s, slider_height + margin_slider))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,234,blit,"screen.blit(min_level_text, (slider_rect.x, slider_rect.y + slider_height + margin_slider))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,235,blit,"screen.blit(max_level_text, (slider_rect.x + slider_width - max_level_text.get_width(), slider_rect.y + slider_height + margin_slider))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,278,blit,"screen.blit(pouch_title, (title_x, title_y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,314,blit,"screen.blit(scaled_image, (self.x_offset, y_position))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,327,pygame_draw,"pygame.draw.rect(screen, outline_color, highlight_rect, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,340,blit,"screen.blit(level_text, (int(self.x_offset - self.screen_width * 80 / 800), y_position))  # Adjusted to the left of the image"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,341,blit,"screen.blit(quantity_text, (int(self.x_offset - self.screen_width * 80 / 800), int(y_position + self.screen_height * 20 / 600)))  # Adjusted to the left of the image"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,349,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,349,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,377,pygame_draw,"pygame.draw.rect(screen, (211, 211, 211), (int(self.x_offset - self.screen_width * 100 / 800), scroll_bar_y, self.scroll_bar_width, scroll_bar_height))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,395,blit,"outlined_text.blit(outline, (1, 1))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,396,blit,"outlined_text.blit(text_surface, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,531,blit,"screen.blit(scaled_analysis_image, (image_x, image_y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,538,blit,"screen.blit(damage_text, (damage_x, damage_y))  # Display below the analysis image"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,548,pygame_draw,"pygame.draw.rect(screen, (30, 30, 30), fallback_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\inventory\projectile\projectile_pouch.py,674,blit,"combined_surface.blit(icon, (x_pos, y_pos))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_advanced_behaviour.py,58,update,Similar to the old Behavior.update() but more advanced logic is performed.
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_behavior.py,36,update,self.mob.movement.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_body_parts.py,90,pygame_draw,"pygame.draw.rect(grid_surface, in_mob.color, rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_body_parts.py,174,blit,"screen.blit(self.polygon_image, (self.mob.rect.x-self.connection_offset[0],self.mob.rect.y-self.connection_offset[1]))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_bullet.py,106,pygame_draw,pygame.draw.arc(
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_bullet.py,440,update,player.status_effects[effect_name].update(effect_data)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_bullet.py,456,blit,"surface.blit(bullet_image, bullet_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_cellular.py,97,blit,"new_image.blit(mob.image, (x * mob.image.get_width(), y * mob.image.get_height()))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_class.py,226,update,self.behavior.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_class.py,231,update,self.movement.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_class.py,234,update,effect.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_class.py,235,update,self.group_anim.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_class.py,237,update,self.skills.update(game)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_class.py,259,blit,"#surface.blit(self.image, self.rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_class.py,260,blit,"surface.blit(self.image, self.rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_group_anim.py,213,pygame_draw,pygame.draw.polygon(
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_group_anim.py,222,pygame_draw,"pygame.draw.circle(surface, particle[""color""], (int(particle[""pos""].x), int(particle[""pos""].y)), particle[""size""])"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_group_anim.py,235,pygame_draw,"pygame.draw.circle(surface, interpolated_color, self.mob.rect.center, radius)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_group_anim.py,244,pygame_draw,"pygame.draw.circle(surface, color, self.mob.rect.center, circle_radius, 10)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_group_anim.py,255,pygame_draw,"pygame.draw.circle(surface, animation['outline_color'], animation['body_part_position'], int(current_radius), 3)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_group_anim.py,263,pygame_draw,"pygame.draw.circle(pulsate_surface, pulsate_color, animation['body_part_position'], int(pulsate_radius), 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_group_anim.py,264,blit,"surface.blit(pulsate_surface, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_group_anim.py,283,pygame_draw,pygame.draw.rect(
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_laser.py,151,pygame_draw,"pygame.draw.line(surface, laser_color, start_pos, end_pos,5)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_laser.py,156,pygame_display_update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_laser.py,156,update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_laser.py,289,pygame_display_update,#pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_laser.py,289,update,#pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_laser.py,372,pygame_display_update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_laser.py,372,update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_melee_attack.py,58,pygame_draw,"pygame.draw.rect(game.screen, mob.color, range_rect, 1)  # Draw white outline square"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_melee_attack.py,59,pygame_display_update,pygame.display.update(range_rect)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_melee_attack.py,59,update,pygame.display.update(range_rect)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_seek.py,148,pygame_draw,"pygame.draw.line(surface, (255, 255, 255), mob_center, stick_end, stick_width)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_seek.py,151,pygame_draw,"pygame.draw.polygon(surface, (255, 255, 255), [p1, p2, p3])"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_shield.py,165,pygame_draw,"pygame.draw.circle(surface, self.shield_color, self.mob.rect.center, int(pulse_radius), 5)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_shield.py,175,pygame_draw,"pygame.draw.circle(surface, self.shield_color, self.mob.rect.center, self.shield_radius, width)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_shield.py,213,pygame_draw,"pygame.draw.circle(surface, particle_color, particle[""pos""], int(particle[""size""]))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_shield.py,306,pygame_draw,"pygame.draw.circle(surface, self.shield_inverted_color, self.mob.rect.center, ultimate_radius, 6)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_shield.py,317,pygame_draw,"pygame.draw.circle(surface, self.shield_color, self.mob.rect.center, flash_radius, 3)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_shield.py,329,pygame_draw,"pygame.draw.circle(surface, self.shield_color, self.mob.rect.center, self.shield_radius, 5)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_shield.py,355,pygame_draw,pygame.draw.circle(
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_skills.py,28,update,self.shield.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_skills.py,30,update,self.laser.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_skills.py,34,update,self.bullet.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_skills.py,35,update,self.spawning_skill.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_skills.py,56,update,skills.update(self.get_skills_from_elements(mob.color))
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_spawn.py,237,update,game.mobs.update(game)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_spawning_skill.py,340,update,lightning.update(dt)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_spawning_skill.py,417,update,self.aura_effect.update(dt)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mob_spawning_skill.py,444,update,lightning.update(0)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mobshape\mobshape_class.py,180,blit,"self.image.blit(head_image, head_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mobshape\mobshape_class.py,220,blit,"self.image.blit(transformed_image, transformed_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mobshape\mobshape_class.py,227,blit,"surface.blit(self.image, self.rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mobshape\mobshape_skills.py,19,update,self.coordinated_attack.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mobshape\effects\attack_effect_manager.py,20,update,effect.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mobshape\effects\fire_effect.py,31,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mobshape\effects\fire_effect.py,44,pygame_draw,"pygame.draw.circle(surf, color, (particle[""size""], particle[""size""]), particle[""size""])"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mobshape\effects\fire_effect.py,45,blit,"surface.blit(surf, (particle[""pos""].x - particle[""size""], particle[""pos""].y - particle[""size""]))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mobshape\effects\laser_effect.py,21,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mobshape\effects\laser_effect.py,28,pygame_draw,"pygame.draw.line(surface, self.base_color, self.start_pos, self.end_pos, int(self.current_thickness))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mobshape\effects\lightning_effect.py,32,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\mobshape\effects\lightning_effect.py,37,pygame_draw,"pygame.draw.lines(surface, self.base_color, False, self.segments, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\AbsoluteZeroEffect.py,23,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\AbsoluteZeroEffect.py,43,pygame_draw,"pygame.draw.line(surface, (0, 255, 255), rect.center, (end_x, end_y), 3)  # Cyan shards"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\AreaEffect.py,22,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\AreaEffect.py,27,pygame_draw,"pygame.draw.circle(area_surface, self.color, (self.radius, self.radius), self.radius, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\AreaEffect.py,28,blit,"surface.blit(area_surface, (offset_rect.left, offset_rect.top))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ArmageddonEffect.py,22,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ArmageddonEffect.py,38,pygame_draw,"pygame.draw.circle(surface, (255, 0, 0), rect.center, 150, 5)  # Red explosion"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ArmageddonEffect.py,42,pygame_draw,"pygame.draw.line(surface, (255, 0, 0), rect.center, (end_x, end_y), 3)  # Red rays"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\BarrierEffect.py,35,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\BarrierEffect.py,72,pygame_draw,"pygame.draw.circle(barrier_surface, self.color, (self.current_radius, self.current_radius), self.current_radius, 4)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\BarrierEffect.py,76,pygame_draw,"pygame.draw.circle(barrier_surface, (*self.color[:3], max(self.color[3] - i*30, 0)),"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\BarrierEffect.py,80,blit,"surface.blit(barrier_surface, (rect.centerx - self.current_radius, rect.centery - self.current_radius))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\BlindEffect.py,20,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\BlindEffect.py,29,blit,"surface.blit(blind_surface, offset_rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\BlossomEffect.py,20,pygame_draw,"pygame.draw.circle(self.blossom_surface, self.color, (self.radius, self.radius), self.radius, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\BlossomEffect.py,25,pygame_draw,"pygame.draw.circle(self.blossom_surface, (255, 192, 203, 200),"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\BlossomEffect.py,34,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\BlossomEffect.py,43,blit,"surface.blit(self.blossom_surface,"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\BurnEffect.py,21,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\BurnEffect.py,30,pygame_draw,"pygame.draw.polygon(burn_surface, (255, 0, 0, self.alpha), ["
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\BurnEffect.py,35,blit,"surface.blit(burn_surface, offset_rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ChainEffect.py,21,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ChainEffect.py,48,pygame_draw,"pygame.draw.line(surface, pulse_color, start_pos, end_pos, base_thickness)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ChainEffect.py,57,pygame_draw,"pygame.draw.line(surface, pulse_color, start_pos, control_point, base_thickness // 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ChainEffect.py,58,pygame_draw,"pygame.draw.line(surface, pulse_color, control_point, end_pos, base_thickness // 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ChillEffect.py,21,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ChillEffect.py,35,blit,"surface.blit(chill_surface, offset_rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\CombustEffect.py,20,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\CombustEffect.py,27,pygame_draw,"pygame.draw.circle(surface, (255, 69, 0), offset_rect.center, self.radius, 2)  # Orange-red for combust"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\CombustEffect.py,32,pygame_draw,"pygame.draw.line(surface, (255, 69, 0), offset_rect.center, end_pos, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\DecayEffect.py,20,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\DecayEffect.py,32,pygame_draw,"pygame.draw.polygon(decay_surface, (128, 0, 128, 128), points, 0)  # Purple with transparency"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\DecayEffect.py,33,blit,"surface.blit(decay_surface, offset_rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\DefaultEffectAnimation.py,20,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\DefaultEffectAnimation.py,28,pygame_draw,"pygame.draw.circle(aura_surface, aura_color, (aura_radius, aura_radius), aura_radius, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\DefaultEffectAnimation.py,29,blit,"surface.blit(aura_surface, (rect.centerx - aura_radius, rect.centery - aura_radius))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\DischargeEffect.py,25,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\DischargeEffect.py,46,pygame_draw,"pygame.draw.circle(discharge_surface, self.color, (self.radius, self.radius), self.radius, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\DischargeEffect.py,54,pygame_draw,"pygame.draw.line(discharge_surface, self.color, (start_x, start_y), (end_x, end_y), 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\DischargeEffect.py,55,blit,"surface.blit(discharge_surface, (rect.centerx - self.radius, rect.centery - self.radius))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\DivineJudgementEffect.py,23,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\DivineJudgementEffect.py,41,pygame_draw,"pygame.draw.circle(surface, (255, 255, 224), rect.center, 60, 4)  # Light yellow burst"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\DivineJudgementEffect.py,45,pygame_draw,"pygame.draw.line(surface, (255, 255, 224), rect.center, (end_x, end_y), 2)  # Light yellow rays"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\DivineRetributionEffect.py,22,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\DivineRetributionEffect.py,41,pygame_draw,"pygame.draw.circle(flash_surface, (255, 255, 255, 128), (rect.width * 2, rect.height * 2), rect.width * 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\DivineRetributionEffect.py,42,blit,"surface.blit(flash_surface, (rect.centerx - rect.width * 2, rect.centery - rect.height * 2))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\DOTEffect.py,23,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\DOTEffect.py,27,pygame_draw,"pygame.draw.circle(dot_surface, self.color, rect.center, self.radius)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\DOTEffect.py,28,blit,"surface.blit(dot_surface, rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ElectricEffect.py,20,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ElectricEffect.py,30,pygame_draw,"pygame.draw.line(surface, (255, 255, 0), start, end, 1)  # Yellow for electric"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\EndlessOceanEffect.py,23,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\EndlessOceanEffect.py,42,pygame_draw,"pygame.draw.circle(surface, (0, 191, 255), rect.center, radius, 2)  # Deep sky blue waves"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\EternalBloomEffect.py,25,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\EternalBloomEffect.py,42,pygame_draw,"pygame.draw.line(surface, (0, 255, 0), rect.center, (end_x, end_y), 2)  # Green petals"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\EternalBloomEffect.py,43,pygame_draw,"pygame.draw.circle(surface, (34, 139, 34), (int(end_x), int(end_y)), 5)  # Small green circles at petal ends"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\EternalWinterEffect.py,23,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ExplodeEffect.py,20,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ExplodeEffect.py,27,pygame_draw,"pygame.draw.circle(surface, (255, 0, 0), offset_rect.center, self.radius, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ExplodeEffect.py,32,pygame_draw,"pygame.draw.line(surface, (255, 0, 0), offset_rect.center, end_pos, 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\FireEffect.py,20,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\FireEffect.py,27,pygame_draw,"pygame.draw.line(surface, (255, 69, 0),"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\FlameEffect.py,20,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\FlameEffect.py,29,pygame_draw,"pygame.draw.lines(surface, (255, 140, 0), False, points, 1)  # Dark orange for flame"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\FlashEffect.py,24,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\FlashEffect.py,32,pygame_draw,"pygame.draw.circle(flash_surface, self.color, rect.center, self.radius, 0)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\FlashEffect.py,33,blit,"surface.blit(flash_surface, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\FreezeEffect.py,21,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\FreezeEffect.py,28,pygame_draw,"pygame.draw.circle(surface, (0, 0, 255, 128), offset_rect.center, int(self.radius), 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\FreezeEffect.py,34,pygame_draw,"pygame.draw.line(surface, (0, 0, 255), offset_rect.center, (x, y), 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\FrostEffect.py,23,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\FrostEffect.py,29,pygame_draw,"pygame.draw.circle(frost_surface, self.color, (self.radius, self.radius), self.radius, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\FrostEffect.py,35,pygame_draw,"pygame.draw.line(frost_surface, self.color, (self.radius, self.radius), (x, y), 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\FrostEffect.py,36,blit,"surface.blit(frost_surface, (rect.centerx - self.radius, rect.centery - self.radius))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\FrozenWorldEffect.py,23,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\FrozenWorldEffect.py,34,blit,"surface.blit(self.frost_surface, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\GaiasEmbraceEffect.py,24,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\GaiasEmbraceEffect.py,32,pygame_draw,"pygame.draw.circle(surface, (34, 139, 34), rect.center, 60, 3)  # Forest green aura"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\GaiasEmbraceEffect.py,36,pygame_draw,"pygame.draw.line(surface, (34, 139, 34), rect.center, (end_x, end_y), 2)  # Green rays"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\GlacierEffect.py,23,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\GlacierEffect.py,32,pygame_draw,"pygame.draw.line(surface, self.color, rect.center, (end_x, end_y), 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\GlacierEffect.py,33,pygame_draw,"pygame.draw.circle(surface, self.color, (int(end_x), int(end_y)), 5)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\HailEffect.py,22,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\HailEffect.py,41,pygame_draw,"pygame.draw.arc(surface, (200, 200, 255), arc_rect, start_angle, end_angle, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\HailEffect.py,50,pygame_draw,"pygame.draw.circle(surface, (192, 192, 255), (int(x), int(y)), 3)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\HeatEffect.py,21,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\HeatEffect.py,30,pygame_draw,"pygame.draw.rect(surface, (255, 215, 0), offset_rect, 2)  # Gold color for heat"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\HeavensFuryEffect.py,23,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\HeavensFuryEffect.py,40,pygame_draw,"pygame.draw.circle(surface, (255, 255, 224), rect.center, 80, 4)  # Light yellow burst"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\HeavensFuryEffect.py,44,pygame_draw,"pygame.draw.line(surface, (255, 255, 224), rect.center, (end_x, end_y), 3)  # Light yellow rays"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\HellfireEffect.py,23,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\HellfireEffect.py,34,pygame_draw,"pygame.draw.line(surface, (255, 0, 0), rect.center, (end_x, end_y), int(2 * self.flame_intensity))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\IceEffect.py,21,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\IceEffect.py,35,blit,"surface.blit(ice_surface, offset_rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\IgniteEffect.py,21,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\IgniteEffect.py,33,pygame_draw,"pygame.draw.circle(surface, (255, 165, 0), offset_rect.center, self.radius, 2)  # Orange color for ignite"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\IgniteEffect.py,37,pygame_draw,"pygame.draw.line(surface, (255, 165, 0), offset_rect.center, end_pos, 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\InfernoEffect.py,23,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\InfernoEffect.py,33,pygame_draw,"pygame.draw.line(surface, self.flame_color, rect.center, (end_x, end_y), 3)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\LifeBloomEffect.py,25,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\LifeBloomEffect.py,35,pygame_draw,"pygame.draw.circle(surface, (34, 139, 34), rect.center, self.pulse_radius, 2)  # Forest green bloom"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\LightEffect.py,21,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\LightEffect.py,28,pygame_draw,"pygame.draw.circle(surface, (255, 255, 224), offset_rect.center, self.radius, 0)  # Light yellow for light"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\MotherNaturesWrathEffect.py,23,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\MotherNaturesWrathEffect.py,40,pygame_draw,"pygame.draw.circle(poison_surface, (0, 100, 0, 100), (100, 100), 100)  # Dark green poison cloud"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\MotherNaturesWrathEffect.py,41,blit,"surface.blit(poison_surface, (rect.centerx - 100, rect.centery - 100))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\NecroAuraEffect.py,24,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\NecroAuraEffect.py,45,pygame_draw,"pygame.draw.circle(necro_surface, self.color, (self.radius, self.radius), self.radius, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\NecroAuraEffect.py,49,pygame_draw,"pygame.draw.circle(necro_surface, (0, 0, 0, 50), (self.radius + offset, self.radius + offset), self.radius - 5, 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\NecroAuraEffect.py,50,blit,"surface.blit(necro_surface, (rect.centerx - self.radius, rect.centery - self.radius))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\OceanicAbyssEffect.py,34,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\OceanicAbyssEffect.py,80,pygame_draw,"pygame.draw.circle(temp_surf, color, (int(current_radius), int(current_radius)), int(current_radius), self.vfx_line_width)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\OceanicAbyssEffect.py,84,blit,"surface.blit(temp_surf, blit_pos)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ParalyzeEffect.py,29,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ParalyzeEffect.py,40,blit,"paralyze_surface.blit(surface, (0, 0))  # Ensure the lines are drawn relative to the mob"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ParalyzeEffect.py,41,pygame_draw,"pygame.draw.line(paralyze_surface, (128, 128, 128), start, end, 2)  # Gray for paralyze"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ParalyzeEffect.py,42,blit,"surface.blit(paralyze_surface, offset_rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\PhoenixRebirthEffect.py,23,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\PhoenixRebirthEffect.py,41,pygame_draw,"pygame.draw.line(surface, (255, 140, 0), rect.center, (end_x, end_y), 2)  # Dark orange flames"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\PoisonEffect.py,21,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\PoisonEffect.py,34,pygame_draw,"pygame.draw.circle(poison_surface, (0, 128, 0, 128), offset_rect.center, self.radius)  # Dark green with transparency"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\PoisonEffect.py,35,blit,"surface.blit(poison_surface, offset_rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\RagnarokEffect.py,23,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\RagnarokEffect.py,40,pygame_draw,"pygame.draw.circle(surface, (128, 0, 128), rect.center, 100, 4)  # Purple aura"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\RagnarokEffect.py,44,pygame_draw,"pygame.draw.line(surface, (128, 0, 128), rect.center, (end_x, end_y), 3)  # Purple rays"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ReanimateEffect.py,21,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ReanimateEffect.py,34,pygame_draw,"pygame.draw.line(surface, (0, 255, 0), end1, end2, 2)  # Changed color to green for reanimation"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ReflectEffect.py,22,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ReflectEffect.py,28,pygame_draw,"pygame.draw.circle(reflect_surface, self.color, (self.radius, self.radius), self.radius, 3)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ReflectEffect.py,33,pygame_draw,"pygame.draw.line(reflect_surface, self.color, (self.radius, self.radius), (end_x, end_y), 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ReflectEffect.py,34,blit,"surface.blit(reflect_surface, (rect.centerx - self.radius, rect.centery - self.radius))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\RepulseEffect.py,21,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\RepulseEffect.py,33,pygame_draw,"pygame.draw.circle(surface, (255, 255, 0), offset_rect.center, int(self.radius), 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\RepulseEffect.py,38,pygame_draw,"pygame.draw.line(surface, (255, 255, 0), offset_rect.center, end_pos, 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ScorchEffect.py,20,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ScorchEffect.py,26,pygame_draw,"pygame.draw.line(surface, (255, 0, 0), start_pos, end_pos, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ScorchEffect.py,29,pygame_draw,"pygame.draw.line(surface, (255, 0, 0), start_pos, end_pos, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ShieldEffect.py,18,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ShieldEffect.py,38,pygame_draw,"pygame.draw.circle(shield_surface, self.color, (self.radius, self.radius), self.radius, 3)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ShieldEffect.py,43,pygame_draw,"pygame.draw.rect(shield_surface, (255, 0, 0), (0, self.radius * 2 - bar_height, bar_width, bar_height))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ShieldEffect.py,44,pygame_draw,"pygame.draw.rect(shield_surface, (0, 255, 0), (0, self.radius * 2 - bar_height, fill_width, bar_height))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ShieldEffect.py,45,blit,"surface.blit(shield_surface, (rect.centerx - self.radius, rect.centery - self.radius))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\SlowEffect.py,24,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\SlowEffect.py,38,pygame_draw,"pygame.draw.rect(surface, (0, 255, 255), offset_rect, 2)  # Cyan for slow"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\Snowflake.py,27,pygame_draw,"pygame.draw.circle(surface, (255, 255, 255), (self.x, self.y), self.size)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\StaticEffect.py,22,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\StaticEffect.py,43,pygame_draw,"pygame.draw.circle(static_surface, self.color, (self.radius, self.radius), self.radius, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\StaticEffect.py,52,pygame_draw,"pygame.draw.line(static_surface, self.color, (start_x, start_y), (end_x, end_y), 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\StaticEffect.py,54,blit,"surface.blit(static_surface, (rect.centerx - self.radius, rect.centery - self.radius))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\StormcallerEffect.py,24,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\StormcallerEffect.py,47,pygame_draw,"pygame.draw.line(surface, (255, 255, 0), rect.center, (end_x, end_y), 2)  # Yellow lightning"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\StunEffect.py,23,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\StunEffect.py,35,pygame_draw,"pygame.draw.circle(surface, (255, 255, 0), offset_rect.center, self.radius, 2)  # Yellow for stun"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\StunEffect.py,41,pygame_draw,"pygame.draw.line(surface, (255, 255, 0), offset_rect.center, (x, y), 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\SupernovaEffect.py,23,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\SupernovaEffect.py,40,pygame_draw,"pygame.draw.circle(surface, (255, 215, 0), rect.center, self.explosion_radius, 3)  # Gold explosion"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\SupernovaEffect.py,44,pygame_draw,"pygame.draw.line(surface, (255, 215, 0), rect.center, (end_x, end_y), 2)  # Gold rays"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ThornsEffect.py,23,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ThornsEffect.py,34,pygame_draw,"pygame.draw.circle(thorns_surface, self.color, (self.radius, self.radius), self.radius, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ThornsEffect.py,39,pygame_draw,"pygame.draw.line(thorns_surface, self.color, (self.radius, self.radius), (end_x, end_y), 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ThornsEffect.py,40,blit,"surface.blit(thorns_surface, (rect.centerx - self.radius, rect.centery - self.radius))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ThunderstormEffect.py,24,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ThunderstormEffect.py,52,pygame_draw,"pygame.draw.line(surface, (255, 255, 0), rect.center, (end_x, end_y), 2)  # Yellow lightning"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\VerdantSurgeEffect.py,27,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\VerdantSurgeEffect.py,34,pygame_draw,"pygame.draw.circle(aura_surface, self.green_aura_color, (self.green_aura_radius, self.green_aura_radius), self.green_aura_radius, 3)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\VerdantSurgeEffect.py,35,blit,"surface.blit(aura_surface, (rect.centerx - self.green_aura_radius, rect.centery - self.green_aura_radius))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\VinesEffect.py,21,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\VinesEffect.py,33,pygame_draw,"pygame.draw.line(surface, (34, 139, 34), offset_rect.center, end_pos, 2)  # Forest green for vines"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\WorldTreeEffect.py,23,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\WorldTreeEffect.py,44,pygame_draw,"pygame.draw.circle(surface, self.tree_color, rect.center, self.tree_radius, 3)  # Tree outline"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ZeussWrathEffect.py,24,update,super().update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\mob\proj_anim\ZeussWrathEffect.py,48,pygame_draw,"pygame.draw.line(surface, (255, 255, 0), rect.center, (end_x, end_y), 3)  # Yellow lightning"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\analysis_loading_animation.py,251,blit,"swirl_color.blit(bubble_surf, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\analysis_loading_animation.py,257,blit,"self.screen.blit(final_surf, (0,0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\analysis_loading_animation.py,258,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\analysis_loading_animation.py,258,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\analysis_loading_animation.py,339,pygame_draw,"pygame.draw.circle(target_surf, c1, center, abs(bubble_r))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\analysis_loading_animation.py,341,pygame_draw,"pygame.draw.circle(target_surf, c2, (center[0]+off, center[1]-off), abs(bubble_r//2))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\analysis_loading_animation.py,371,blit,"new_surf.blit(subregion, (x0+dx, y0+dy))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\master_analyser.py,234,blit,"screen.blit(grey_loading_image, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\master_analyser.py,235,pygame_display_update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\master_analyser.py,235,update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\menu_system.py,119,pygame_draw,"pygame.draw.rect(self.menu.screen, self.constants.NAV_BAR_COLOR, self.rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\menu_system.py,150,blit,"self.menu.screen.blit(text_surf, (x, self.menu_page.header_height))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\menu_system.py,174,blit,"self.menu.screen.blit(self.image, self.position)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\menu_system.py,227,blit,"self.menu.screen.blit(self.surface, (0, 100))  # Adjust position as needed"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\menu_system.py,257,pygame_draw,"pygame.draw.rect(surface, self.header_color, self.header_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\menu_system.py,258,blit,"surface.blit(self.header_surf, self.header_rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\menu_system.py,264,blit,"surface.blit(text_surf, (self.rect.x + 20, y_offset))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\menu_system.py,312,pygame_draw,"pygame.draw.rect(self.menu.screen, color, self.rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\menu_system.py,313,blit,"self.menu.screen.blit(self.text_surf, self.text_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\menu_system.py,341,pygame_draw,"pygame.draw.rect(self.menu.screen, self.menu.constants.TOOLTIP_BG_COLOR, bg_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\menu_system.py,342,blit,"self.menu.screen.blit(text_surf, (bg_rect.x + self.padding, bg_rect.y + self.padding))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\menu_system.py,364,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\menu_system.py,364,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\menu_system.py,376,update,"self.tooltip.update(hovered_button.tooltip, (event.pos[0] + 10, event.pos[1] + 10))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\menu_system.py,378,update,"self.tooltip.update("""", (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\particles\particle_group.py,39,update,particle.update(game)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\particles\particle_system.py,85,update,group.update(game)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\particles\particle_visualizer.py,124,pygame_draw,"pygame.draw.circle(image, aura_color, center, int(aura_radius))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\particles\particle_visualizer.py,144,pygame_draw,"pygame.draw.circle(image, current_core_color, center, int(core_radius))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\particles\particle_visualizer.py,153,pygame_draw,"pygame.draw.polygon(image, current_core_color, points)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\particles\particle_visualizer.py,157,pygame_draw,"pygame.draw.rect(image, current_core_color, rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\particles\particle_visualizer.py,159,pygame_draw,"pygame.draw.circle(image, current_core_color, center, int(core_radius), 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\particles\particle_visualizer.py,161,pygame_draw,"pygame.draw.circle(image, current_core_color, center, int(core_radius))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\particles\particle_visualizer.py,261,pygame_draw,"pygame.draw.lines(screen, lightning['color'], False, path, thickness)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\particles\particle_visualizer.py,289,blit,"screen.blit(image, blit_position)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\PCG\particles\trajectory_modes.py,130,update,"stage_params.update(stage.get('params', {}))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\calabiyau_avatar.py,241,pygame_draw,"pygame.draw.lines(self.surface, line_color, False, line_points, self.line_thickness)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\calabiyau_avatar.py,245,pygame_draw,"pygame.draw.lines(self.surface, line_color, False, line_points, self.line_thickness)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\field.py,279,pygame_draw,"pygame.draw.line(surface, direction_color, pos, end_pos, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\field.py,288,pygame_draw,"pygame.draw.line(surface, line_color, (x, 0), (x, h), 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\field.py,291,pygame_draw,"pygame.draw.line(surface, line_color, (0, y), (w, y), 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\field.py,302,pygame_draw,"pygame.draw.polygon(surface, color, [p1, p2, p3])"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\fractals.py,160,blit,"screen.blit(self.rendered_surfaces[fractal_name][last], (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\fractals.py,165,blit,"screen.blit(self.rendered_surfaces[fractal_name][current_depth], (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\fractals.py,193,blit,"screen.blit(surface, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\fractals.py,255,blit,"screen.blit(temp_surface, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\fractals.py,296,pygame_draw,"pygame.draw.line(screen, color, seg[0], seg[1], thickness)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\fractals.py,579,pygame_draw,"pygame.draw.rect(screen, config['color'], rect, 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\fractals.py,601,pygame_draw,"pygame.draw.rect(screen, config['color'], (x, y, size, size), 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\fractals.py,625,pygame_draw,"pygame.draw.circle(screen, config['color'], (int(c[0]), int(c[1])), int(r), 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\lightning.py,94,update,edge.update(dt)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\lightning.py,100,blit,"#self.persistence.blit(fade, (0,0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\lightning.py,104,pygame_draw,"#    pygame.draw.line(self.persistence, self.glow_color, start, end, 4)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\lightning.py,108,blit,"surface.blit(self.persistence, (0,0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\lightning.py,114,pygame_draw,"pygame.draw.line(glow_surf, self.glow_color, start, end, 8)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\lightning.py,115,blit,"surface.blit(glow_surf, (0,0), special_flags=pygame.BLEND_RGBA_ADD)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\lightning.py,119,pygame_draw,"pygame.draw.line(surface, self.core_color, start, end, 3)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\lightning.py,122,update,self.start_pos.update(start_pos)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\lightning.py,123,update,self.end_pos.update(end_pos)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\wireframe.py,154,pygame_draw,"pygame.draw.line(screen, LINE_COLOR, p, right, 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\wireframe.py,157,pygame_draw,"pygame.draw.line(screen, LINE_COLOR, p, down, 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\wireframe.py,166,pygame_draw,"pygame.draw.line(screen, (255, 0, 0), origin, x_axis, 2)  # X-axis in red"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\wireframe.py,167,pygame_draw,"pygame.draw.line(screen, (0, 255, 0), origin, y_axis, 2)  # Y-axis in green"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\wireframe.py,168,pygame_draw,"pygame.draw.line(screen, (0, 0, 255), origin, z_axis, 2)  # Z-axis in blue"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\wireframe.py,171,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\physics\wireframe.py,171,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\player\player_class.py,459,blit,"surface.blit(self.image, self.rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\player\player_class.py,468,update,self.attack_skills.update(game)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\player\player_skills.py,100,update,self.melee.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\player\player_skills.py,103,update,self.particle_system.update(game)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\stats\check_level_up.py,107,blit,"screen.blit(player.image, player.rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\stats\check_level_up.py,117,pygame_draw,"pygame.draw.line(screen, (255, 255, 255), line[0], line[1], 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\stats\check_level_up.py,133,pygame_draw,"pygame.draw.circle(screen, (255, 255, 255, int(alpha)), center, int(current_pulse_radius), pulse_width)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\stats\check_level_up.py,135,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\stats\check_level_up.py,135,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\stats\check_level_up.py,140,pygame_draw,"pygame.draw.line(screen, (255, 255, 255), line[0], line[1], 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\stats\check_level_up.py,141,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\stats\check_level_up.py,141,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,159,blit,"self.screen.blit(overlay, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,169,pygame_draw,"pygame.draw.rect(self.screen, self.bg_color, popup_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,170,pygame_draw,"pygame.draw.rect(self.screen, self.border_color, popup_rect, 3)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,176,blit,"self.screen.blit(title_surf, title_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,183,blit,"self.screen.blit(tile_info_surf, tile_info_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,192,pygame_draw,"pygame.draw.rect(self.screen, self.button_color, self.offer_button_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,195,blit,"self.screen.blit(offer_text, offer_text_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,199,pygame_draw,"pygame.draw.rect(self.screen, self.close_button_color, self.close_button_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,202,blit,"self.screen.blit(close_text, close_text_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,209,blit,"self.screen.blit(acquired_surf, acquired_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,221,blit,"self.screen.blit(inventory_title_surf, inventory_title_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,238,pygame_draw,"pygame.draw.rect(self.screen, color, square_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,239,pygame_draw,"pygame.draw.rect(self.screen, self.border_color, square_rect, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,245,blit,"self.screen.blit(qty_text, qty_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,257,blit,"self.screen.blit(offering_title_surf, offering_title_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,266,pygame_draw,"pygame.draw.rect(self.screen, self.get_color_from_name(color), square_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,267,pygame_draw,"pygame.draw.rect(self.screen, self.border_color, square_rect, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,272,pygame_draw,"pygame.draw.rect(self.screen, box['color'], box['rect'], 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,275,blit,"self.screen.blit(text_surf, text_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,287,blit,"self.screen.blit(tile_colors_title_surf, tile_colors_title_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,339,pygame_draw,"pygame.draw.rect(self.screen, color_values[i], tile_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,341,pygame_draw,"# pygame.draw.rect(self.screen, (255, 255, 255), tile_rect, 1)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,350,blit,"self.screen.blit(plus_text, plus_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,364,pygame_draw,"pygame.draw.rect(self.screen, color_values[i], fill_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,365,pygame_draw,"pygame.draw.rect(self.screen, self.border_color, outline_rect, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,371,blit,"self.screen.blit(text, text_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,376,blit,"self.screen.blit(mob_count_text, mob_count_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,572,blit,"self.screen.blit(message_surf, message_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,573,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,573,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,590,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\color_offerings.py,590,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\tile_renderer.py,151,blit,"#   buffer.blit(rendered_tile, (tile_x, tile_y + ui_bar_offset))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\world_manager.py,367,update,self.ui_bar.update(current_buffer)
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\world_manager.py,368,blit,"current_buffer.blit(self.world_renderer.background_pixelated_scrambled_surface, (0, self.ui_bar_height))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\world_manager.py,383,blit,"self.screen.blit(current_buffer, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\world_manager.py,386,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\world_manager.py,386,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\world_manager.py,402,pygame_draw,"pygame.draw.line(buffer, (200, 200, 200),"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\world_manager.py,409,pygame_draw,"pygame.draw.line(buffer, (200, 200, 200),"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\world_manager.py,448,pygame_draw,"pygame.draw.circle(portal_surface, color, (cx, cy), self.grid_size_x//8)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\world_manager.py,451,blit,"buffer.blit(portal_surface, (tile_x, tile_y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\world_renderer.py,241,blit,"buffer.blit(tile_surface, (tile_position[0], tile_position[1] + self.world_manager.ui_bar_height))"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\world_renderer.py,310,blit,"tile_surface.blit(overlay_scaled, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\world_view.py,52,update,world_manager.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\world_zone.py,140,update,#self.zone_fields.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\zone_rpg_calculator.py,314,update,self.visual_effects.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\portal\portal_base.py,48,pygame_draw,"pygame.draw.circle(portal_surface, color, (grid_size_x // 2, grid_size_y // 2),"
+C:/Users/lierm/Documents/Games/ALLV8/src\core\world\portal\portal_base.py,50,blit,"surface.blit(portal_surface, (pos_x, pos_y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\states\states_game_play.py,39,update,self.game.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\states\states_main_menu.py,50,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\states\states_main_menu.py,50,flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\bottom_ui_bar.py,205,update,self.effects_section.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\bottom_ui_bar.py,214,pygame_draw,"pygame.draw.rect(self.screen, (30, 30, 30), bar_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\bottom_ui_bar.py,222,pygame_draw,pygame.draw.line(
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,90,pygame_draw,"pygame.draw.rect(self.screen, (255, 0, 0), fill_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,91,pygame_draw,"pygame.draw.rect(self.screen, (255, 255, 255), outline_rect, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,95,blit,"self.screen.blit(text, text_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,106,pygame_draw,"pygame.draw.rect(self.screen, (111, 111, 111), fill_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,107,pygame_draw,"pygame.draw.rect(self.screen, (255, 255, 255), outline_rect, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,111,blit,"self.screen.blit(text, text_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,132,blit,"self.screen.blit(level_text, level_text_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,133,blit,"self.screen.blit(statpoint_text, statpoint_text_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,134,blit,"self.screen.blit(kill_count_text, kill_count_text_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,153,blit,"self.screen.blit(username_text, username_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,158,blit,"self.screen.blit(zone_time_text, zone_time_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,165,blit,"self.screen.blit(text, text_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,177,blit,"self.screen.blit(arcarde_zone_name_text, arcarde_zone_name_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,182,blit,"self.screen.blit(max_mob_text, max_mob_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,187,blit,"self.screen.blit(total_mob_text, total_mob_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,200,blit,"self.screen.blit(text_surface, text_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,237,blit,"self.screen.blit(existing_surface, (self.third_block_x * 0.9, 5))"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,374,blit,"self.screen.blit(diamond_surface, (self.third_block_x * 0.9, 5))"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,445,pygame_draw,"pygame.draw.rect(self.screen, color_values[i], tile_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,456,blit,"self.screen.blit(plus_text, plus_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,470,pygame_draw,"pygame.draw.rect(self.screen, color_values[i], fill_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,471,pygame_draw,"pygame.draw.rect(self.screen, (255, 255, 255), outline_rect, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,479,blit,"self.screen.blit(text, text_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,486,blit,"self.screen.blit(mob_count_text, mob_count_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_bar.py,554,blit,"screen.blit(fps_text, self.position)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_effects_section.py,60,blit,"screen.blit(icon, (x, y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_effects_section.py,65,blit,"screen.blit(duration_text, duration_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_menu_section.py,30,pygame_draw,"pygame.draw.rect(screen, (50, 50, 50), button_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_menu_section.py,31,pygame_draw,"pygame.draw.rect(screen, (255, 255, 255), button_rect, 2)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_menu_section.py,34,blit,"screen.blit(text_surface, text_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_skill_section.py,171,pygame_draw,"pygame.draw.rect(surface, color, rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_skill_section.py,172,pygame_draw,"pygame.draw.rect(surface, (0, 0, 0), rect, 1)  # black border"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_skill_section.py,237,pygame_draw,"pygame.draw.circle(circle_surface, avg_color + (150,),"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_skill_section.py,243,pygame_draw,"pygame.draw.circle(circle_surface, comp_color + (int(255 * factor),),"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_skill_section.py,246,blit,"overlay.blit(circle_surface, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_skill_section.py,268,blit,"overlay.blit(colored, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_skill_section.py,292,pygame_draw,"pygame.draw.circle(glow_surface, (255, 215, 0, glow_alpha),"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_skill_section.py,295,blit,"overlay.blit(glow_surface, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_skill_section.py,300,pygame_draw,"pygame.draw.circle(circle_surface, avg_color + (150,),"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_skill_section.py,306,pygame_draw,"pygame.draw.circle(circle_surface, comp_color + (int(255 * factor),),"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_skill_section.py,309,blit,"overlay.blit(circle_surface, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_skill_section.py,330,blit,"overlay.blit(colored, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_skill_section.py,334,pygame_draw,"pygame.draw.circle(shimmer, (0, 191, 255, shimmer_alpha),"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_skill_section.py,337,blit,"overlay.blit(shimmer, (0, 0), special_flags=pygame.BLEND_RGBA_ADD)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_skill_section.py,358,blit,"screen.blit(icon, (pos.x, pos.y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\elements\ui_skill_section.py,404,blit,"screen.blit(overlay_frame, (pos.x, pos.y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\menus\main_menu.py,92,blit,"surface.blit(self.emerge_surface, rect.topleft)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\menus\main_menu.py,98,blit,"surface.blit(text_surf, text_rect)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\menus\main_menu.py,218,pygame_display_update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\menus\main_menu.py,218,update,pygame.display.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\utils\grid_animation.py,251,pygame_draw,"pygame.draw.line(overlay, color_with_alpha,"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\utils\grid_animation.py,255,pygame_draw,"pygame.draw.line(overlay, color_with_alpha,"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\utils\grid_animation.py,258,blit,"self.screen.blit(overlay, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\utils\highlighting.py,32,blit,"screen.blit(overlay, (rect.x, rect.y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\utils\loading_screen.py,51,blit,"surface.blit(self.glow, glow_pos)"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\utils\loading_screen.py,53,blit,"surface.blit(self.rendered_text, (self.x, self.y))"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\utils\loading_screen.py,124,blit,"self.screen.blit(self.background, (0, 0))"
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\utils\loading_screen.py,129,update,text.update()
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\utils\loading_screen.py,132,pygame_display_flip,pygame.display.flip()
+C:/Users/lierm/Documents/Games/ALLV8/src\ui\utils\loading_screen.py,132,flip,pygame.display.flip()

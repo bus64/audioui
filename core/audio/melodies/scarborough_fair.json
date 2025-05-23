@@ -1,0 +1,16 @@
+{
+  "title": "Scarborough Fair (melody)",
+  "composer": "Traditional",
+  "key": "E minor",
+  "tempo": 85,
+  "time_signature": "3/4",
+  "notes": [
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},
+    {"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"A4","frequency":440.00,"duration_beats":1},
+    {"pitch":"B4","frequency":493.88,"duration_beats":1},
+    {"pitch":"A4","frequency":440.00,"duration_beats":1},
+    {"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"E4","frequency":329.63,"duration_beats":2}
+  ]
+}

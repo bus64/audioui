@@ -1,0 +1,17 @@
+{
+  "title": "Prelude in C Major",
+  "composer": "Johann Sebastian Bach",
+  "key": "C major",
+  "tempo": 120,
+  "time_signature": "4/4",
+  "notes": [
+    {"pitch":"C4","frequency":261.63,"duration_beats":0.5},
+    {"pitch":"E4","frequency":329.63,"duration_beats":0.5},
+    {"pitch":"G4","frequency":392.00,"duration_beats":0.5},
+    {"pitch":"C5","frequency":523.25,"duration_beats":0.5},
+    {"pitch":"B4","frequency":493.88,"duration_beats":0.5},
+    {"pitch":"G4","frequency":392.00,"duration_beats":0.5},
+    {"pitch":"E4","frequency":329.63,"duration_beats":0.5},
+    {"pitch":"C4","frequency":261.63,"duration_beats":0.5}
+  ]
+}

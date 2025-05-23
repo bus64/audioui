@@ -1,0 +1,32 @@
+Source Directory: presets
+
+from abc import ABC, abstractmethod
+from core.audio.presets.base_preset import BasePreset
+from core.audio.presets.base_preset import BasePreset   # unchanged
+from pyo import (Fader, Pan, SigTo, Freeverb, Chorus, ButBP, ButLP)
+from pyo import FM, Chorus, Freeverb, Fader
+from pyo import Fader, Sine, IRPulse
+from pyo import Fader, Sine, Noise, SigTo, Chorus, Freeverb, ButLP, IRPulse
+from pyo import Fader, Sine, SigTo
+from pyo import Noise, ButBP, Sine, Fader, Mix
+from pyo import Noise, Chorus
+from pyo import Noise, Fader, ButBP
+from pyo import Noise, Fader, ButHP
+from pyo import Noise, Fader, Degrade, SmoothDelay, ButHP
+from pyo import Noise, Fader, NewTable, TableRec, TableRead, ButBP, Disto
+from pyo import Server, Sine, Fader, Noise, SigTo, Chorus, Freeverb, ButLP, ButBP, IRPulse
+from pyo import Sine, Fader
+from pyo import Sine, Fader, Chorus, ButLP, SigTo
+from pyo import Sine, Fader, Delay, Pan, Sine as LFO
+from pyo import Sine, Fader, Disto
+from pyo import Sine, Fader, Disto, ButLP
+from pyo import Sine, Fader, Freeverb
+from pyo import Sine, Fader, Sine as LFO
+from pyo import Sine, Noise, ButBP, ButHP, Biquad, Fader, SigTo, Tanh
+from pyo import Sine, Noise, ButBP, ButHP, Fader, Clip, Biquad, Gate
+from pyo import SineLoop, Fader, Chorus
+from random import random
+from random import uniform
+import math, time
+import random, time, threading
+import time, threading, random, math

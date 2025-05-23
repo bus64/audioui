@@ -1,0 +1,14 @@
+{
+  "title": "Waltz of the Flowers",
+  "composer": "Pyotr Ilyich Tchaikovsky",
+  "key": "D major",
+  "tempo": 120,
+  "time_signature": "3/4",
+  "notes": [
+    {"pitch":"D5","frequency":587.33,"duration_beats":1},
+    {"pitch":"F#5","frequency":739.99,"duration_beats":1},
+    {"pitch":"A5","frequency":880.00,"duration_beats":1},
+    {"pitch":"D6","frequency":1174.66,"duration_beats":2},
+    {"pitch":"C6","frequency":1046.50,"duration_beats":1}
+  ]
+}

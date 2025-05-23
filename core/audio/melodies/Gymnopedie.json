@@ -1,0 +1,13 @@
+{
+  "title": "Gymnopédie No. 1",
+  "composer": "Erik Satie",
+  "key": "D major",
+  "tempo": 60,
+  "time_signature": "3/4",
+  "notes": [
+    {"pitch":"G4","frequency":392.00,"duration_beats":3},
+    {"pitch":"F#4","frequency":369.99,"duration_beats":3},
+    {"pitch":"E4","frequency":329.63,"duration_beats":3},
+    {"pitch":"D4","frequency":293.66,"duration_beats":3}
+  ]
+}

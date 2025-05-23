@@ -1,0 +1,17 @@
+{
+  "title": "La Folia",
+  "composer": "Traditional",
+  "key": "D minor",
+  "tempo": 110,
+  "time_signature": "4/4",
+  "notes": [
+    {"pitch":"D4","frequency":293.66,"duration_beats":2},
+    {"pitch":"A4","frequency":440.00,"duration_beats":2},
+    {"pitch":"Bb4","frequency":466.16,"duration_beats":2},
+    {"pitch":"F4","frequency":349.23,"duration_beats":2},
+    {"pitch":"G4","frequency":392.00,"duration_beats":2},
+    {"pitch":"D4","frequency":293.66,"duration_beats":2},
+    {"pitch":"C4","frequency":261.63,"duration_beats":2},
+    {"pitch":"A4","frequency":440.00,"duration_beats":2}
+  ]
+}

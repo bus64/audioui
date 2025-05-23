@@ -1,0 +1,94 @@
+Source Directory: Audioui
+
+from abc import ABC, abstractmethod
+from async_hyper_manager import AsyncHyperManager
+from collections import deque
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from core.audio.maestro.automix      import AutoMixer
+from core.audio.maestro.harmonic     import HarmonicAnalyser
+from core.audio.maestro.progression  import ProgressionSynth
+from core.audio.presets.base_preset               import BasePreset
+from datetime import datetime
+from music21 import chord, instrument
+from music21 import note, stream, analysis
+from pathlib import Path
+from pydub import AudioSegment
+from pyo import (Fader, Pan, SigTo, Freeverb, Chorus, ButLP, Sine)
+from pyo import FM, Chorus, Freeverb, Fader
+from pyo import Fader, Sine, IRPulse
+from pyo import Fader, Sine, SigTo
+from pyo import Noise, ButBP, Sine, Fader, Mix
+from pyo import Noise, Chorus
+from pyo import Noise, Fader, ButBP
+from pyo import Noise, Fader, ButHP
+from pyo import Noise, Fader, Degrade, SmoothDelay, ButHP
+from pyo import Noise, Fader, NewTable, TableRec, TableRead, ButBP, Disto
+from pyo import Server, SfPlayer
+from pyo import Server, SfPlayer, Harmonizer, Granulator, Freeverb, Disto, Degrade, Noise, ButLP
+from pyo import Sine, Fader
+from pyo import Sine, Fader, Chorus, ButLP, SigTo
+from pyo import Sine, Fader, Delay, Pan, Sine as LFO
+from pyo import Sine, Fader, Disto
+from pyo import Sine, Fader, Disto, ButLP
+from pyo import Sine, Fader, Freeverb
+from pyo import Sine, Fader, Sine as LFO
+from pyo import Sine, Noise, ButBP, ButHP, Biquad, Fader, SigTo, Tanh
+from pyo import Sine, Noise, ButBP, ButHP, Fader, Clip, Biquad, Gate
+from pyo import SineLoop, Fader, Chorus
+from radon.complexity import cc_visit
+from random import random
+from random import uniform
+from scipy.signal import resample
+from threading import Thread
+from tkinter import *
+from tkinter import filedialog, scrolledtext, messagebox, ttk
+from tkinter import ttk
+from typing import Any, ClassVar, Dict, Type
+from typing import Any, Dict
+from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Literal
+from typing import Dict, List, Tuple
+from typing import Optional
+import aiohttp
+import argparse
+import ast
+import asyncio
+import configparser
+import core.audio.presets as presets_pkg
+import functools
+import importlib
+import inspect
+import json
+import linecache
+import logging
+import math
+import multiprocessing
+import music21.key as m21key
+import music21.roman as roman
+import numpy as np
+import os
+import os, json, time, math, traceback, inspect, importlib.util
+import pandas as pd
+import pkgutil
+import psutil
+import psutil, os, sys
+import pygame
+import pyloudnorm as pyln
+import pyo.lib._core as _pc
+import pyttsx3
+import queue
+import random
+import random, time, threading
+import re
+import requests
+import shutil
+import signal
+import sounddevice as sd
+import subprocess
+import sys
+import tempfile
+import threading
+import time
+import tkinter as tk
+import tracemalloc

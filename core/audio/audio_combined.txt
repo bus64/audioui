@@ -1,0 +1,3921 @@
+Source Directory: audio
+
+# File: src/core/audio/audio_engine_client.py  © 2025 projectemergence. All rights reserved.
+
+import threading
+import asyncio
+import logging
+import psutil, os, sys
+from core.audio.audio_engine_server import AudioEngine, log as server_log
+from core.audio.maestro.audio_maestro import Maestro
+
+class AudioEngineClient:
+    """
+    Asyncio‐based AudioEngineClient with its own event loop:
+
+      • Dedicated asyncio loop in a daemon thread  
+      • asyncio.Queue for commands and acknowledgements  
+      • Synchronous API: play_preset, play_block, schedule_preset, stop_preset, stop_all, list_scheduled, stop
+    """
+    def __init__(self, *, debug: bool = True):
+        # — Logging setup —
+        self.logger = logging.getLogger(__name__)
+        if debug:
+            logging.basicConfig(level=logging.DEBUG)
+
+        # — Start a private asyncio loop in a background thread —
+        self.loop = asyncio.new_event_loop()
+        self._thread = threading.Thread(target=self._run_loop, daemon=True)
+        self._thread.start()
+
+        # — Finish async init on that loop —
+        init_fut = asyncio.run_coroutine_threadsafe(self._init_async(), self.loop)
+        init_fut.result()  # block until ready
+
+    def _run_loop(self):
+        proc = psutil.Process()
+        try:
+            if sys.platform == "win32":
+                proc.nice(psutil.IDLE_PRIORITY_CLASS)
+            else:
+                os.nice(10)
+        except Exception:
+            print("\n ################################################################################ \nIssue setting thread priority \n ################################################################################\n")
+            pass
+        
+        asyncio.set_event_loop(self.loop)
+        self.loop.run_forever()
+
+    async def _init_async(self):
+        # Queues for command/ack exchange
+        self.cmd_queue: asyncio.Queue[dict] = asyncio.Queue()
+        self.ack_queue: asyncio.Queue[dict] = asyncio.Queue()
+
+        # Track scheduled presets so we can cancel them later
+        self._sched: dict[str, asyncio.Future] = {}
+
+        # Instantiate the server engine on this loop
+        self.engine = AudioEngine(
+            cmd_queue=self.cmd_queue,
+            ack_queue=self.ack_queue
+        )
+        # Kick off the server’s asyncio run() coroutine
+        self.loop.create_task(self.engine.run())
+
+        # Instantiate Maestro
+        self.maestro = Maestro(self)
+        print(f"[AudioClient]Mute is {self.maestro.mute}")
+    def play_preset(self, preset: str, **params) -> None:
+        if self.maestro.mute==True:
+            self.stop_all()
+            return
+        """
+        Enqueue a 'play_preset' command. Non‐blocking.
+        """
+        asyncio.run_coroutine_threadsafe(
+            self.cmd_queue.put({"cmd": "play_preset", "preset": preset, "params": params}),
+            self.loop
+        )
+        self.logger.info(f"▶ play_preset {preset} {params}")
+
+    def play_block(self, events: list[dict]) -> None:
+        if self.maestro.mute==True:
+            self.stop_all()
+            return
+        """
+        Enqueue a list of events:
+        - each event is {"time_offset": float, "preset": str, "params": dict}
+        """
+        asyncio.run_coroutine_threadsafe(
+         self.cmd_queue.put({"cmd": "play_block", "events": events}),
+         self.loop
+        )
+        self.logger.info(f"▶ play_block with {len(events)} events")
+
+    def stop_preset(self, preset: str, *, fade: float = 1.0) -> None:
+        if self.maestro.mute==True:
+            self.stop_all()
+            return
+        """
+        Fade‐out a single preset and cancel its scheduler.
+        """
+        asyncio.run_coroutine_threadsafe(
+            self.cmd_queue.put({
+                "cmd": "play_preset",
+                "preset": preset,
+                "params": {"intensity": 0, "fade": fade}
+            }),
+            self.loop
+        )
+        fut = self._sched.pop(preset, None)
+        if fut and not fut.cancelled():
+            fut.cancel()
+        self.logger.info(f"✕ stopped preset {preset} (fade={fade}s)")
+
+    def stop_all(self, *, fade: float = 1.0) -> None:
+        """
+        Stop all playing & scheduled presets.
+        """
+        for p in list(self._sched):
+            self.stop_preset(p, fade=fade)
+
+
+    def shutdown(self) -> None:
+        if self.maestro.mute==True:
+            self.stop_all()
+            return
+        """
+        Gracefully shut down the server loop and its thread.
+        """
+        # 1) tell the engine to stop
+        asyncio.run_coroutine_threadsafe(self.cmd_queue.put({"cmd": "stop"}), self.loop).result()
+        # 2) stop the loop & join thread
+        self.loop.call_soon_threadsafe(self.loop.stop)
+        self._thread.join(timeout=2)
+        self.logger.info("shutdown complete")
+
+    def stop(self) -> None:
+        """
+        Alias for shutdown(), for legacy callers.
+        """
+        self.shutdown()
+
+
+# File: src/core/audio/audio_engine_server.py  © 2025 projectemergence. All rights reserved.
+
+import asyncio
+import os
+import time
+import tempfile
+import logging
+from typing import Any, Dict,Literal
+from core.audio.audio_presets_registry import registry
+from core.audio.presets.base_preset               import BasePreset
+
+import pyttsx3
+from pyo import Server, SfPlayer
+import pyo.lib._core as _pc
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.ERROR)
+TTSProp = Literal["voice", "rate", "volume"]
+
+# ─── PortAudio race‐fix ───────────────────────────────────────────────────────
+_tmp = tempfile.mkdtemp(prefix="pyo_temp_")
+os.environ.update({"TMP": _tmp, "TEMP": _tmp})
+_orig_pa = _pc.pa_get_default_devices_from_host
+def _safe_pa(host):
+    try:
+        return _orig_pa(host)
+    except PermissionError as e:
+        if e.errno != os.errno.EACCES:
+            raise
+        time.sleep(0.2)
+        return _orig_pa(host)
+_pc.pa_get_default_devices_from_host = _safe_pa
+
+def log(msg: str) -> None:
+    print(f"[AudioEngineServer] {msg}", flush=True)
+
+class AudioEngine:
+    """
+    Asyncio-based AudioEngineServer with:
+      • central PresetRegistry for hot-reload + introspection
+      • pyo-based TTS & block playback
+      • graceful shutdown on 'stop'
+    """
+    def __init__(self,
+                 cmd_queue: asyncio.Queue,
+                 ack_queue: asyncio.Queue | None = None,
+                 *,
+                 default_voice_id=None,
+                 default_rate: int = 175,
+                 default_volume: float = 1.0,
+                 sample_rate: int = 44_100,
+                 buffersize: int = 1024):
+        self.cmd_queue      = cmd_queue
+        self.ack_queue      = ack_queue
+        self.shutdown_event = asyncio.Event()
+        self._voices        = []
+
+        logger.info("initialising AudioEngineServer")
+
+        # ─── TTS engine ───────────────────────────────────────────────────────
+        self._tts = pyttsx3.init()
+        self._tts.setProperty("rate", default_rate)
+        self._tts.setProperty("volume", default_volume)
+        if default_voice_id:
+            self._tts.setProperty("voice", default_voice_id)
+        logger.info("pyttsx3 TTS ready")
+
+        # ─── Pyo server ───────────────────────────────────────────────────────
+        self.server = Server(sr=sample_rate, buffersize=buffersize, nchnls=2).boot().start()
+        logger.info(f"pyo server up (sr={sample_rate}, bs={buffersize})")
+
+        # ─── Central PresetRegistry ───────────────────────────────────────────
+        self.preset_map  = registry.preset_map
+        self.presets_sig = registry.presets_sig
+        logger.info("presets loaded → " + ", ".join(sorted(self.preset_map)))
+        logger.debug("PRESET_MAP keys: %s", list(self.preset_map.keys()))
+        logger.debug("PRESETS_SIG params: %s",
+                     {k: list(sig.parameters.keys()) for k, sig in self.presets_sig.items()})
+        self.mute=False
+    async def run(self):
+        logger.info("server run loop started")
+        while not self.shutdown_event.is_set():
+            cmd = await self.cmd_queue.get()
+            logger.debug("run loop received cmd: %s", cmd)
+            try:
+                await self._handle(cmd)
+            finally:
+                self.cmd_queue.task_done()
+
+        # separate calls to avoid chaining None
+        self.server.stop()
+        self.server.shutdown()
+        logger.info("server shut down")
+
+    async def _handle(self, cmd: Dict[str, Any]) -> None:
+        logger.debug("handling command: %s", cmd)
+        match cmd.get("cmd"):
+            case "play_preset":
+                await self._handle_play_preset(cmd)
+            case "play_block":
+                await self._handle_play_block(cmd)
+            case "play_tts":
+                self._handle_play_tts(cmd)
+            case "set_tts":
+                self._handle_set_tts(cmd)
+            case "play_tts_direct":
+                self._handle_play_tts_direct(cmd)
+            case "stop":
+                logger.debug("stop → shutting down")
+                self.shutdown_event.set()
+            case other:
+                logger.warning("unhandled command: %r", other)
+
+    async def _handle_play_preset(self, cmd: Dict[str, Any]) -> None:
+        name, params = cmd["preset"], cmd.get("params", {})
+        logger.debug("  play_preset → name=%s  params=%s", name, params)
+
+        cls = self.preset_map.get(name)
+        if not cls:
+            logger.warning("  unknown preset '%s'", name)
+            return
+
+        allowed = set(self.presets_sig[name].parameters) - {"self", "args", "kwargs"}
+        init_args = {k: v for k, v in params.items() if k in allowed}
+        logger.debug("  allowed args=%s  init_args=%s", allowed, init_args)
+
+        t0 = time.perf_counter()
+        obj = cls(**init_args).play()
+        self._voices.append(obj)
+        dt = (time.perf_counter() - t0) * 1000
+        logger.info("▶ %s %s (%.1f ms)", name, init_args, dt)
+
+        if self.ack_queue:
+            await self.ack_queue.put({"ok": True, "preset": name, "ts": time.time()})
+
+    async def _handle_play_block(self, cmd: Dict[str, Any]) -> None:
+        events = cmd.get("events", [])
+        logger.debug("  play_block → scheduling %d events", len(events))
+        asyncio.create_task(self._process_block_events(events))
+
+    def _handle_play_tts(self, cmd: Dict[str, Any]) -> None:
+        text = cmd.get("text", "")
+        logger.debug("  play_tts → text=%r", text)
+        if not text:
+            return
+
+        fn = tempfile.mktemp(suffix=".wav")
+        self._tts.save_to_file(text, fn)
+        self._tts.runAndWait()
+        SfPlayer(fn, loop=False).out()
+
+    def _handle_play_tts_direct(self, cmd: Dict[str, Any]) -> None:
+        text = cmd.get("text", "")
+        logger.debug("  play_tts_direct → text=%r", text)
+        if not text:
+            return
+        self._tts.say(text)
+        #self._tts.runAndWait()
+
+    def _handle_set_tts(self, cmd: Dict[str, Any]) -> None:
+        """
+        Update only those TTS properties that are provided and differ
+        from the current settings.
+        Supports:
+          - 'rate'   (int)
+          - 'volume' (float 0.0–1.0)
+          - 'voice'  (either an int index into voices[] or a voice-id string)
+        """
+        # cache the voices list once (for index→id translation)
+        voices_list = self._tts.getProperty('voices')
+
+        for prop in ("rate", "volume", "voice"):
+            # skip if not provided
+            if prop not in cmd:
+                continue
+
+            new_val = cmd[prop]
+            if new_val is None:
+                continue
+
+            if prop == "voice":
+                # allow passing an index or a direct id
+                if isinstance(new_val, int):
+                    try:
+                        new_id = voices_list[new_val].id
+                    except (IndexError, AttributeError):
+                        logger.warning("Invalid voice index: %r", new_val)
+                        continue
+                else:
+                    new_id = new_val
+
+                current = self._tts.getProperty("voice")
+                if new_id != current:
+                    self._tts.setProperty("voice", new_id)
+                    logger.info("TTS property voice set to %s", new_id)
+
+            else:
+                # 'rate' or 'volume'
+                current = self._tts.getProperty(prop)
+                if new_val != current:
+                    self._tts.setProperty(prop, new_val)
+                    logger.info("TTS property %s set to %s", prop, new_val)
+
+
+    async def _process_block_events(self, events: list[dict]):
+        logger.debug("process_block_events start: %s", events)
+        loop  = asyncio.get_running_loop()
+        start = loop.time()
+
+        for ev in sorted(events, key=lambda e: e["time_offset"]):
+            logger.debug("  next event: %s", ev)
+            await asyncio.sleep(max(0, (start + ev["time_offset"]) - loop.time()))
+
+            name, params = ev["preset"], ev.get("params", {})
+            logger.debug("    firing preset '%s'  raw params=%s", name, params)
+
+            cls = self.preset_map.get(name)
+            if not cls:
+                logger.warning("    [play_block] unknown preset '%s'", name)
+                continue
+
+            allowed = set(self.presets_sig[name].parameters) - {"self", "args", "kwargs"}
+            pr_args = {k: v for k, v in params.items() if k in allowed}
+            meta    = {k: v for k, v in params.items() if k not in allowed}
+            logger.debug("    split → pr_args=%s  meta=%s", pr_args, meta)
+
+            chain = cls(**pr_args).play()
+            self._voices.append(chain)
+            logger.info("▶ [play_block] %s %s @ %.2fs", name, pr_args, ev["time_offset"])
+
+            if gain := meta.get("gain_db"):
+                logger.debug("      applying gain_db=%.2f", gain)
+                for node in getattr(chain, "values", lambda: [])():
+                    try: node.mul *= 10 ** (gain/20)
+                    except: pass
+
+            if meta.get("enable_reverb"):
+                logger.debug("      applying reverb")
+                from pyo import Freeverb
+                for sig in getattr(chain, "values", lambda: [])():
+                    try: Freeverb(sig, size=0.8, bal=0.35).out()
+                    except: pass
+
+            if meta.get("enable_chorus"):
+                logger.debug("      applying chorus")
+                from pyo import Chorus
+                for sig in getattr(chain, "values", lambda: [])():
+                    try: Chorus(sig, depth=0.5, feedback=0.25, bal=0.5).out()
+                    except: pass
+
+
+# File: src/core/audio/presets/audio_presets_registry.py  © 2025 projectemergence. All rights reserved.
+
+import pkgutil
+import importlib
+import inspect
+import threading
+import logging
+import time
+
+from core.audio.presets.base_preset import BasePreset
+import core.audio.presets as presets_pkg
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+class PresetRegistry:
+    """
+    Discovers and introspects all presets in core.audio.presets.
+    No background polling—reload is entirely on-demand or manual.
+    """
+    def __init__(self):
+        self.preset_map:  dict[str, type[BasePreset]]   = {}
+        self.presets_sig: dict[str, inspect.Signature] = {}
+        self.presets_meta: dict[str, dict[str, object]] = {}
+        self._lock = threading.Lock()
+
+        logger.debug("Initializing PresetRegistry")
+        # initial load
+        self._load_all_presets()
+
+    def reload(self):
+        """
+        Manually trigger a full reload of all presets.
+        Can be called at runtime from any external code.
+        """
+        logger.info("Manual reload of presets requested")
+        self._load_all_presets()
+
+    def _load_all_presets(self):
+        """
+        (Re)scan the presets package, import each module,
+        pick a preset class, introspect its constructor,
+        and update the registry maps. Thread-safe.
+        """
+        logger.debug("Loading presets from %s", presets_pkg.__path__)
+        new_map, new_sigs, new_meta = {}, {}, {}
+
+        for finder, name, ispkg in pkgutil.iter_modules(presets_pkg.__path__):
+            if name.startswith("_"):
+                logger.debug("  skipping internal module '%s'", name)
+                continue
+
+            mod_name = f"{presets_pkg.__name__}.{name}"
+            try:
+                logger.debug("  importing %s", mod_name)
+                mod = importlib.reload(importlib.import_module(mod_name))
+            except Exception as e:
+                logger.exception("  failed to import %s: %s", mod_name, e)
+                continue
+
+            # 1) Prefer an explicit BasePreset subclass
+            preset_cls = next(
+                (c for _, c in inspect.getmembers(mod, inspect.isclass)
+                 if issubclass(c, BasePreset) and c is not BasePreset),
+                None
+            )
+
+            # 2) Fallback: first class defined in this module
+            if not preset_cls:
+                local = [
+                    c for _, c in inspect.getmembers(mod, inspect.isclass)
+                    if c.__module__ == mod_name
+                ]
+                if local:
+                    preset_cls = local[0]
+                    logger.debug("    fallback to local class %s in %s", preset_cls.__name__, name)
+
+            if not preset_cls:
+                logger.debug("    no class found for preset '%s'", name)
+                continue
+
+            # introspect constructor
+            sig = inspect.signature(preset_cls.__init__)
+            meta = {
+                p.name: p.default
+                for p in sig.parameters.values()
+                if p.name != "self" and p.default is not inspect._empty
+            }
+
+            new_map[name]   = preset_cls
+            new_sigs[name]  = sig
+            new_meta[name]  = meta
+
+            logger.info("Registered preset '%s' → %s(); params=%s",
+                        name, preset_cls.__name__, list(meta.keys()))
+
+        # swap in the new maps under lock
+        with self._lock:
+            self.preset_map.clear()
+            self.preset_map.update(new_map)
+            self.presets_sig.clear()
+            self.presets_sig.update(new_sigs)
+            self.presets_meta.clear()
+            self.presets_meta.update(new_meta)
+
+        logger.debug("PresetRegistry now contains: %s", list(self.preset_map.keys()))
+
+    # no background thread or polling—_watch_loop is disabled
+    def _watch_loop(self):
+        return
+
+# singleton instance
+registry = PresetRegistry()
+
+
+# File: src/core/audio/tts_engine.py  © 2025 projectemergence. All rights reserved.
+
+import asyncio
+from typing import Optional
+
+import numpy as np
+from scipy.signal import resample
+import sounddevice as sd
+
+class TTSEngine:
+    """
+    Async TTS engine using Coqui VITS:
+      • Lazy‐loads the model on first use
+      • Offloads synthesis & playback to a ThreadPoolExecutor
+    """
+    def __init__(self,
+                 model_name: str = "tts_models/en/vctk/vits",
+                 speaker: str = "p291",
+                 rate: float = 1.0,
+                 pitch_shift: float = 0.0):
+        self._model_name = model_name
+        self._speaker = speaker
+        self._rate = rate
+        self._pitch_shift = pitch_shift
+        self._tts: Optional["TTS"] = None
+
+    async def _ensure_loaded(self):
+        if self._tts is None:
+            from TTS.api import TTS
+            loop = asyncio.get_running_loop()
+            self._tts = await loop.run_in_executor(
+                None, lambda: TTS(self._model_name, progress_bar=False, gpu=False)
+            )
+
+    async def speak(self, text: str) -> None:
+        """
+        Asynchronously synthesize and play `text`.
+        """
+        await self._ensure_loaded()
+        loop = asyncio.get_running_loop()
+
+        # 1) synthesize off‐thread
+        audio = await loop.run_in_executor(
+            None,
+            lambda: self._tts.tts(text=text, speaker=self._speaker, return_type="numpy")
+        )
+
+        # 2) optional rate change
+        if self._rate != 1.0:
+            audio = resample(audio, int(len(audio) / self._rate))
+
+        # 3) play off‐thread
+        def _play():
+            sd.play(audio, samplerate=22050)
+            sd.wait()
+
+        await loop.run_in_executor(None, _play)
+
+
+#File:  src/core/audio/__init__.py © 2025 projectemergence. All rights reserved.
+#File:  src/core/__init__.py © 2024 projectemergence. All rights reserved.
+# This file can be left empty, or you can use it to perform package-level initialization if needed.
+
+
+# File: src/core/audio/maestro/arrangement_engine.py  © 2025 projectemergence. All rights reserved.
+
+import random
+from typing import Dict, List, Any
+from core.audio.maestro.harmonic     import HarmonicAnalyser
+from core.audio.maestro.progression  import ProgressionSynth
+from core.audio.maestro.orchestrator import Orchestrator
+from core.audio.maestro.automix      import AutoMixer
+
+class ArrangementEngine:
+    def __init__(self, client, maestro=None):
+        self.client = client
+        self.maestro=maestro
+        self.ha     = HarmonicAnalyser()
+        self.ps     = ProgressionSynth()
+        self.orc    = Orchestrator()
+        self.mix    = AutoMixer()
+
+    def prepare_block(self, beats: float = 4.0) -> Dict[str, Dict[str, Any]]:
+        if self.maestro.mute==True:
+            return
+        """
+        1) Pull a full block of melody events from the Compositor.
+        2) Analyze melody → chord progression → orchestration.
+        3) Inject the raw melody as its own part.
+        4) Auto-mix & return the per-part configs.
+        """
+        # 1) Gather raw block events
+        raw = self.client.maestro.compositor.next_block_events(beats)
+
+        # a) flatten melody for analysis
+        melody = [(f, d) for ev in raw for f, d, _ in zip(ev['notes'], ev['durations'], ev['intensity'])]
+        analysis = self.ha.describe(melody)
+
+        # b) chord progression
+        chords = self.ps.next(analysis, beats)
+        chord_dur = beats / max(len(chords), 1)
+        chord_durs = [chord_dur] * len(chords)
+
+        # c) orchestration
+        parts = self.orc.voice(chords, chord_durs)
+
+        # 2) inject raw melody
+        parts['melody'] = {
+            'notes':     [f for ev in raw for f in ev['notes']],
+            'durations': [d for ev in raw for d in ev['durations']],
+            'intensity': [i for ev in raw for i in ev['intensity']],
+        }
+
+        # 3) batch auto-mix
+        return self.mix.autoset(parts)
+
+
+# File: src/core/audio/maestro/audio_maestro.py © 2025 projectemergence. All rights reserved.
+
+import asyncio
+import logging
+import os
+import pkgutil
+import random
+import time
+
+from core.audio.audio_presets_registry import registry
+from core.audio.maestro.maestro_compositor import Compositor
+from core.audio.maestro.arrangement_engine import ArrangementEngine
+
+class Maestro:
+    """
+    Async Generative Music Maestro using a single PresetRegistry.
+    """
+    def __init__(self, client):
+        self.client = client
+        self.logger = logging.getLogger(__name__)
+        self.zones, self.tasks, self.sfx_events = {}, {}, []
+        self.mute=False
+        print(f"Mute is {self.mute}")
+        # LFO state
+        self.tempo, self.energy = 120.0, 0.7
+        self._last_time, self._phase = time.time(), 0.02
+
+        # Central registry
+        self.presets_sig  = registry.presets_sig
+        self.presets_meta = registry.presets_meta
+        self.all_presets  = list(registry.preset_map)
+        self.logger.info(f"All presets discovered: {self.all_presets}")
+
+        # Compositor & arranger
+        base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "melodies"))
+        self.compositor = Compositor(base,maestro=self)
+        self.arranger    = ArrangementEngine(self.client,maestro=self)
+
+    def queue_sfx(self, name: str, *, delay: float = 0.0, params: dict = None):
+        if self.mute==True:
+            self.client.stop_all()
+            return
+        self.sfx_events.append({
+            "time_offset": delay,
+            "preset":      name,
+            "params":      params or {}
+        })
+
+    def enter_zone(self, zone: str, presets: set[str]):
+        if self.mute==True:
+            self.client.stop_all()
+            return
+        if old := self.tasks.pop(zone, None): old.cancel()
+        self.zones[zone] = presets
+        self.tasks[zone] = asyncio.run_coroutine_threadsafe(self._zone_block_loop(zone), self.client.loop)
+
+    set_zone = enter_zone
+
+    def leave_zone(self, zone: str):
+        if fut := self.tasks.pop(zone, None): fut.cancel()
+        self.zones.pop(zone, None)
+
+    async def _zone_block_loop(self, zone: str):
+        if self.mute==True:
+            self.client.stop_all()
+            return
+        beats, first = 8.0, True
+        while True:
+            try:
+                if first:
+                    mel = random.choice(list(self.compositor.melodies.keys()))
+                    self.compositor.start(mel)
+                    first = False
+                    self.logger.info(f"[{zone}] starting melody '{mel}'")
+
+                self._update_tempo(); self._update_energy()
+                raw      = self.compositor.next_block_events(beats)
+                parts_fx = self.arranger.prepare_block(beats=beats)
+
+                # Remap each part to a random preset
+                remapped = {random.choice(self.all_presets): cfg for cfg in parts_fx.values()}
+                self.logger.debug(f"[{zone}] remapped parts→presets: {list(remapped)}")
+
+                events = []
+                # raw melody under 'lead'
+                for ev in raw:
+                    events.append({
+                        "time_offset": ev["time"] * (60.0/self.tempo),
+                        "preset":      "lead",
+                        "params":      {
+                            "notes":     ev["notes"],
+                            "durations": ev["durations"],
+                            "intensity": ev["intensity"]
+                        }
+                    })
+                # orchestration
+                for p, cfg in remapped.items():
+                    events.append({"time_offset": 0.0, "preset": p, "params": cfg})
+                # queued SFX
+                events.extend(self.sfx_events)
+                self.sfx_events.clear()
+
+                events.sort(key=lambda e: e["time_offset"])
+                self.client.play_block(events)
+                self.logger.debug(f"[{zone}] play_block → {len(events)} events")
+
+                await asyncio.sleep(beats * (60.0/self.tempo))
+
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                self.logger.warning(f"Error in zone '{zone}': {e}")
+
+    def _update_tempo(self):
+        if self.mute==True:
+            self.client.stop_all()
+            return
+        step = self.tempo * random.uniform(-0.07, 0.07)
+        self.tempo = max(60.0, min(240.0, self.tempo + random.uniform(-step, step)))
+
+    def _update_energy(self):
+        if self.mute==True:
+            self.client.stop_all()
+            return
+        now, dt = time.time(), time.time() - self._last_time
+        beat_time = 60.0/self.tempo
+        self._phase   = (self._phase + dt/(32*beat_time)) % 1.0
+        self.energy   = 0.7 + 0.3 * (__import__("math").sin(2*__import__("math").pi*self._phase))
+        self._last_time = now
+
+
+# File: src/core/audio/maestro/automix.py  © 2025 projectemergence. All rights reserved.
+
+import pyloudnorm as pyln
+import numpy as np
+from pydub import AudioSegment
+from typing import Dict, Any
+
+class AutoMixer:
+    """
+    Batch FFT & loudness EQ for entire blocks:
+      • One integrated loudness measurement per part
+      • Frequency‐bin cache by sample‐count
+      • Heuristic reverb/chorus flags
+    """
+    def __init__(self, target_lufs: float = -14.0, sr: int = 48000):
+        self.meter = pyln.Meter(sr)
+        self.target = target_lufs
+        self.sr = sr
+        # cache rfftfreq arrays by length
+        self._freq_cache: Dict[int, np.ndarray] = {}
+
+    def autoset(self,
+                parts: Dict[str, Dict[str, Any]],
+                target_lufs: float | None = None
+               ) -> Dict[str, Dict[str, Any]]:
+        tgt = target_lufs if target_lufs is not None else self.target
+
+        for name, cfg in parts.items():
+            # render a quick sine‐stub
+            seg = self._sine_stub(cfg['notes'], cfg['durations'], sr=self.sr)
+            samples = np.array(seg.get_array_of_samples(), dtype=float)
+
+            N = len(samples)
+            if N not in self._freq_cache:
+                # cache once
+                self._freq_cache[N] = np.fft.rfftfreq(N, 1/self.sr)
+            freqs = self._freq_cache[N]
+
+            # compute magnitude spectrum (if you need it for advanced EQ later)
+            _ = np.abs(np.fft.rfft(samples))
+
+            # loudness‐based gain_dB
+            loud = self.meter.integrated_loudness(samples)
+            parts[name]['gain_db'] = 3 #tgt - loud
+
+            # simple FX heuristics
+            parts[name]['enable_reverb']  = np.mean(cfg['notes']) > 60
+            parts[name]['enable_chorus']  = len(cfg['notes']) > 6
+
+        return parts
+
+    @staticmethod
+    def _sine_stub(notes, durs, sr=48000) -> AudioSegment:
+        """
+        Quick AudioSegment of concatenated sine‐tones for level analysis.
+        """
+        samples = []
+        for n, d in zip(notes, durs):
+            # midi-to-frequency fallback if needed
+            freq = n if isinstance(n, float) else 440.0
+            N = int(sr * d)
+            t = np.linspace(0, d, N, False)
+            samples.append(np.sin(2 * np.pi * freq * t))
+        arr = np.concatenate(samples)
+        pcm = (arr * 32767).astype(np.int16).tobytes()
+        return AudioSegment(pcm, frame_rate=sr, sample_width=2, channels=1)
+
+
+# File: src/core/audio/maestro/harmonic.py  © 2025 projectemergence. All rights reserved.
+
+import math
+from typing import List, Tuple, Dict
+import functools
+
+import numpy as np
+from music21 import note, stream, analysis
+
+# build major/minor triad templates in pitch‐class space
+_NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B']
+_CHORD_TEMPLATES: Dict[str, List[int]] = {
+    **{name: [i, (i+4)%12, (i+7)%12] for i,name in enumerate(_NOTE_NAMES)},      # major
+    **{name+'m': [i, (i+3)%12, (i+7)%12] for i,name in enumerate(_NOTE_NAMES)},  # minor
+}
+
+class HarmonicAnalyser:
+    """
+    Real‐time key, chord & function estimation with caching:
+      • @lru_cache on describe calls (cached by tuple(melody))
+      • Input melody converted to hashable tuple internally
+    """
+    def __init__(self):
+        # wrap the uncached implementation in an LRU cache
+        self._describe_cached = functools.lru_cache(maxsize=128)(self._describe_uncached)
+
+    def describe(self, melody: List[Tuple[float, float]]) -> Dict[str, List]:
+        """
+        Memoized wrapper. Converts `melody` list to a tuple for caching.
+        """
+        return self._describe_cached(tuple(melody))
+
+    def _describe_uncached(
+        self,
+        melody: Tuple[Tuple[float, float], ...]
+    ) -> Dict[str, List]:
+        """
+        Original implementation, renamed to _describe_uncached.
+        """
+        # 1) Key estimation
+        s = stream.Stream()
+        offset = 0.0
+        for freq, dur in melody:
+            n = note.Note()
+            n.pitch.frequency = freq
+            n.offset = offset
+            n.quarterLength = dur
+            s.insert(n)
+            offset += dur
+        key_obj = s.analyze("Krumhansl")
+        key = f"{key_obj.tonic.name} {key_obj.mode}"
+
+        # 2) collect events as (time, pitch_class)
+        events = []
+        t = 0.0
+        for freq, dur in melody:
+            midi = int(round(69 + 12*math.log2(freq/440.0)))
+            pc = midi % 12
+            events.append((t, pc))
+            t += dur
+
+        total_beats = math.ceil(offset)
+        chords, durations = [], []
+        tonic_pc = _NOTE_NAMES.index(key_obj.tonic.name)
+
+        # 3) for each beat‐window pick best triad
+        for b in range(total_beats):
+            window = [pc for time, pc in events if b <= time < b+1]
+            if not window:
+                symbol = key_obj.tonic.name + ("" if key_obj.mode=="major" else "m")
+            else:
+                hist = np.zeros(12, int)
+                for pc in window:
+                    hist[pc] += 1
+                best_score, symbol = -1, key_obj.tonic.name
+                for sym, template in _CHORD_TEMPLATES.items():
+                    score = sum(hist[pc] for pc in template)
+                    if score > best_score:
+                        best_score, symbol = score, sym
+            chords.append(symbol)
+            durations.append(1.0)
+
+        # 4) map each chord → function (0=T,1=S,2=D)
+        functions = []
+        for sym in chords:
+            root = sym.rstrip('m')
+            root_pc = _NOTE_NAMES.index(root) if root in _NOTE_NAMES else tonic_pc
+            interval = (root_pc - tonic_pc) % 12
+            if interval in (7, 11):
+                functions.append(2)
+            elif interval in (2, 5):
+                functions.append(1)
+            else:
+                functions.append(0)
+
+        return {
+            "key":       key,
+            "chords":    chords,
+            "functions": functions,
+            "durations": durations
+        }
+
+
+# File: src/core/audio/maestro/maestro_compositor.py  © 2025 projectemergence. All rights reserved.
+
+import os
+import re
+import json
+import random
+from typing import List, Tuple, Dict, Optional, Any
+
+# A single note event: (frequency in Hz, duration in beats, intensity 0–1)
+NoteEvent = Tuple[float, float, float]
+
+class Compositor:
+    """
+    • Loads JSON5‐style melody files (comments allowed)
+    • Captures all metadata (title, structure, remix params, etc.)
+    • Falls back to legacy "notes" arrays when "hands" is absent
+    • Exposes get_full_sequence(), next_event(), and next_block_events()
+    """
+    def __init__(self, repo_path: str, default_intensity: float = 0.8,maestro=None):
+        self.repo_path         = repo_path
+        self.default_intensity = default_intensity
+        self.maestro=maestro
+        # name → metadata dict (everything except 'hands'/'notes')
+        self.metadata:  Dict[str, Dict[str, Any]]          = {}
+        # name → list of hands → list of NoteEvent
+        self.melodies:  Dict[str, List[List[NoteEvent]]]   = {}
+        # name → tempo (BPM)
+        self.tempos:    Dict[str, float]                   = {}
+        # name → (beats_per_bar, beat_unit)
+        self.meters:    Dict[str, Tuple[int,int]]          = {}
+
+        # playback state
+        self.current_hands:   List[List[NoteEvent]] = []
+        self.idxs:            List[int]             = []
+        self.current_melody:  Optional[str]         = None
+
+        print(f"[Compositor] Scanning melodies in {self.repo_path}")
+        self._load_repo()
+
+    def _load_repo(self):
+        if self.maestro.mute==True:
+            return
+        def strip_comments(text: str) -> str:
+            without_block = re.sub(r'/\*.*?\*/', '', text, flags=re.DOTALL)
+            without_line  = re.sub(r'//.*', '', without_block)
+            return without_line
+
+        for fn in sorted(os.listdir(self.repo_path)):
+            if not fn.lower().endswith(".json"):
+                continue
+            path = os.path.join(self.repo_path, fn)
+            name = fn[:-5]
+            try:
+                raw  = open(path, encoding="utf-8").read()
+                data = json.loads(strip_comments(raw))
+            except Exception as e:
+                print(f"[Compositor] Failed to parse {fn}: {e}")
+                continue
+
+            md = {k: v for k, v in data.items() if k not in ("hands", "notes")}
+            self.metadata[name] = md
+
+            if "tempo" in data:
+                self.tempos[name] = float(data["tempo"])
+                print(f"[Compositor] '{name}': tempo={data['tempo']} BPM")
+            if "time_signature" in data:
+                tsig = data["time_signature"]
+                try:
+                    num, den = map(int, tsig.split("/"))
+                    self.meters[name] = (num, den)
+                    print(f"[Compositor] '{name}': time_signature={tsig}")
+                except:
+                    print(f"[Compositor] '{name}': invalid time_signature '{tsig}'")
+
+            hands_raw = data.get("hands") or ([data["notes"]] if "notes" in data else None)
+            hands_evs: List[List[NoteEvent]] = []
+            if isinstance(hands_raw, list):
+                for hl in hands_raw:
+                    if not isinstance(hl, list):
+                        continue
+                    evs: List[NoteEvent] = []
+                    for o in hl:
+                        try:
+                            f = float(o["frequency"])
+                            d = float(o.get("duration_beats", o.get("duration", 1.0)))
+                            i = float(o.get("intensity", self.default_intensity))
+                            evs.append((f, d, i))
+                        except:
+                            continue
+                    if evs:
+                        hands_evs.append(evs)
+            if hands_evs:
+                self.melodies[name] = hands_evs
+                print(f"[Compositor] Registered '{name}' with {len(hands_evs)} hand(s)")
+            else:
+                print(f"[Compositor] No valid events in '{name}', skipping")
+
+    def start(self, melody_name: str):
+        if self.maestro.mute==True:
+            return
+        """Begin fresh run through up to 4 hands."""
+        self.current_melody = melody_name
+        self.current_hands  = self.melodies.get(melody_name, [])
+        self.idxs           = [0] * len(self.current_hands)
+        print(f"[Compositor] Starting '{melody_name}' with {len(self.current_hands)} hand(s)")
+
+    def next_event(self) -> Tuple[List[float], List[float], List[float]]:
+        if self.maestro.mute==True:
+            return
+        """Return parallel lists: notes, durations, intensities."""
+        if not self.current_hands:
+            return [0.0], [1.0], [0.0]
+        notes, durs, ints = [], [], []
+        for hi, hand in enumerate(self.current_hands):
+            f, d, i = hand[self.idxs[hi]]
+            notes.append(f)
+            durs.append(d)
+            ints.append(max(-1,i))
+            self.idxs[hi] = (self.idxs[hi] + 1) % len(hand)
+        #print(f"[Compositor] next_event → notes={notes}, durs={durs}, ints={ints}")
+        return notes, durs, ints
+
+    def get_full_sequence(self) -> Tuple[List[float], List[float], List[float]]:
+        if self.maestro.mute==True:
+            return
+        """Return entire first‐hand sequence."""
+        if not self.current_hands:
+            return [], [], []
+        evs   = self.current_hands[0]
+        return [f for f,_,_ in evs], [d for _,d,_ in evs], [i for _,_,i in evs]
+
+    def get_tempo(self, default: float) -> float:
+        if self.maestro.mute==True:
+            return
+        """Return stored tempo or default."""
+        return self.tempos.get(self.current_melody, default)
+
+    def get_meter(self) -> Tuple[int,int]:
+        if self.maestro.mute==True:
+            return
+        """Return (beats_per_bar, beat_unit) or (4,4)."""
+        return self.meters.get(self.current_melody, (4,4))
+
+    def next_block_events(self, beats: float) -> List[Dict[str, Any]]:
+        if self.maestro.mute==True:
+            return
+        """
+        Gather events until we've covered `beats` beats.
+        Returns a list of dicts:
+          {"time": beat_offset,
+           "notes": [...],
+           "durations": [...],
+           "intensity": [...]}
+        """
+        events: List[Dict[str, Any]] = []
+        time_acc = 0.0
+        while time_acc < beats:
+            notes, durs, ints = self.next_event()
+            events.append({
+                "time":       time_acc,
+                "notes":      notes,
+                "durations":  durs,
+                "intensity":  ints
+            })
+            # advance by the average duration of this batch
+            time_acc += sum(durs) / len(durs)
+        return events
+
+
+#File:  audio/maestro_mixer.py © 2025 projectemergence. All rights reserved.
+import numpy as np
+from collections import deque
+
+class Mixer:
+    """
+    Perform real-time spectral analysis and drive a parametric EQ.
+    """
+    def __init__(self, client, sample_rate=48000, frame_size=1024):
+        self.client       = client
+        self.sr           = sample_rate
+        self.N            = frame_size
+        # rolling history of spectra for smoothing
+        self.history      = deque(maxlen=4)
+        # EQ band centers (Hz)
+        self.bands        = [125, 250, 500, 1000, 2000, 4000, 8000, 16000]
+        # initial gains
+        self.band_gains   = {b: 1.0 for b in self.bands}
+
+    def analyze_and_eq(self, audio_frame: np.ndarray):
+        """
+        audio_frame: 1-D float32 buffer of length N.
+        """
+        # 1) compute magnitude spectrum
+        spec = np.abs(np.fft.rfft(audio_frame * np.hanning(self.N)))
+        self.history.append(spec)
+        avg_spec = np.mean(self.history, axis=0)
+
+        # 2) for each band, find corresponding bin range
+        freqs = np.fft.rfftfreq(self.N, 1/self.sr)
+        for center in self.bands:
+            # find nearest bin
+            idx = np.argmin(np.abs(freqs - center))
+            magnitude = avg_spec[idx]
+            # map magnitude → desired gain (simple inverse)
+            # clamp between 0.5 and 1.0
+            gain = float(max(0.5, min(1.0, 1.0 - (magnitude / avg_spec.max())*0.5)))
+            # smooth update (one-pole)
+            self.band_gains[center] = 0.8*self.band_gains[center] + 0.2*gain
+            # push to client’s EQ
+            self.client.set_eq_gain(center, self.band_gains[center])
+
+
+# File: src/core/audio/maestro/orchestrator.py  © 2025 projectemergence. All rights reserved.
+# orchestrator.py
+from music21 import chord, instrument
+
+REGISTER = {
+    'bass': (28, 48),      # E1–C3
+    'piano': (50, 96),     # D3–C7
+    'pad': (40, 84),
+    'lead': (60, 108),
+}
+
+class Orchestrator:
+    def __init__(self):
+        self.occ = {name: 0 for name in REGISTER}
+
+    def voice(self, chords: list[str], rhythm: list[float]):
+        parts = {}
+        for symb, dur in zip(chords, rhythm):
+            c = chord.Chord(symb)
+            # FIX: c.bass() is a Pitch, so just .midi (no .pitch)
+            bass_note = c.bass().midi
+
+            # allocate bass
+            parts.setdefault('bass', {'notes': [], 'durations': [], 'intensity': []})
+            parts['bass']['notes'].append(self._fit(bass_note, 'bass'))
+            parts['bass']['durations'].append(dur)
+            parts['bass']['intensity'].append(.9)
+
+            # allocate chord tones to piano spread over two octaves
+            p_notes = [self._fit(n.pitch.midi, 'piano') for n in c.notes]
+            parts.setdefault('piano', {'notes': [], 'durations': [], 'intensity': []})
+            parts['piano']['notes'].extend(p_notes)
+            parts['piano']['durations'].extend([dur/len(p_notes)] * len(p_notes))
+            parts['piano']['intensity'].extend([.7] * len(p_notes))
+
+        return parts
+
+    def _fit(self, midi: int, role: str) -> int:
+        low, high = REGISTER[role]
+        while midi < low:
+            midi += 12
+        while midi > high:
+            midi -= 12
+        self.occ[role] += 1
+        return midi
+
+
+# File: src/core/audio/maestro/progression.py  © 2025 projectemergence. All rights reserved.
+
+import re
+import random
+import functools
+import logging
+from typing import Dict, Any, List, Optional, Tuple
+
+import music21.key as m21key
+import music21.roman as roman
+
+logger = logging.getLogger(__name__)
+
+class ProgressionSynth:
+    """
+    Rule‐based chord progression generator with caching:
+      • Caches next() by (key_str, beats, time_signature)
+      • Key objects & RomanNumeral creations memoized
+      • Graceful fallback on any parsing error
+    """
+
+    GENRE_TEMPLATES: Dict[str, List[str]] = {
+        'pop':       ['I', 'V', 'vi', 'IV'],
+        'rock':      ['I', 'IV', 'V'],
+        'blues':     ['I', 'IV', 'I', 'V'],
+        'jazz':      ['ii', 'V', 'I'],
+        'classical': ['I', 'vi', 'ii', 'V'],
+        'funk':      ['I', 'bVII', 'IV', 'I'],
+    }
+
+    FUNCTION_MARKOV: Dict[str, List[str]] = {
+        'T': ['S']*3 + ['D']*2 + ['T'],
+        'S': ['D']*4 + ['T'],
+        'D': ['T']*5 + ['S'],
+    }
+
+    RN_TO_FUNCTION: Dict[str, str] = {
+        'I':'T','i':'T','vi':'T','VI':'T','III':'T','iii':'T',
+        'ii':'S','II':'S','IV':'S','iv':'S',
+        'V':'D','v':'D','vii°':'D','VII':'D'
+    }
+
+    def __init__(self, genre: str = 'pop', temperature: float = 0.5):
+        self.genre       = genre if genre in self.GENRE_TEMPLATES else None
+        self.temperature = max(0.0, min(1.0, temperature))
+
+        # cache helpers
+        self._key_obj     = functools.lru_cache(maxsize=32)(self._make_key)
+        self._rn_obj      = functools.lru_cache(maxsize=256)(self._make_roman)
+        self._next_cached = functools.lru_cache(maxsize=128)(self._next_uncached)
+
+    def next(self, analysis: Dict[str,Any], beats: float) -> List[str]:
+        """
+        Public API: wraps cached _next_uncached, normalizing inputs.
+        """
+        raw_key = analysis.get('key', 'C major')
+        # normalize flats/sharps
+        key_str = raw_key.translate(str.maketrans({'♭':'b','♯':'#'}))
+        # strip out any junk, collapse whitespace
+        key_str = re.sub(r'[^A-Za-z #]+', ' ', key_str).strip()
+        parts = key_str.split()
+        if len(parts) >= 2:
+            tonic, mode = parts[0].capitalize(), parts[1].lower()
+            if mode not in ('major','minor'):
+                mode = 'major'
+            key_str = f"{tonic} {mode}"
+        else:
+            key_str = "C major"
+
+        try:
+            return list(self._next_cached(key_str, beats, analysis.get('time_signature')))
+        except Exception as e:
+            logger.warning(f"Progression failed for '{key_str}': {e}. Falling back to C major.")
+            try:
+                return list(self._next_cached("C major", beats, analysis.get('time_signature')))
+            except Exception as e2:
+                logger.error(f"Fallback progression also failed: {e2}. Returning ['C'].")
+                return ['C']
+
+    def _next_uncached(self,
+                       key_str: str,
+                       beats: float,
+                       time_signature: Optional[str]
+                      ) -> Tuple[str, ...]:
+        # 1) parse key
+        m21k = self._key_obj(key_str)
+
+        # 2) determine bar count
+        bar_beats = 4.0
+        if time_signature:
+            num, den = map(int, time_signature.split('/'))
+            bar_beats = num * (4/den)
+        n_bars = max(1, int(round(beats / bar_beats)))
+
+        # 3) choose Roman numerals
+        if self.genre:
+            tpl = self.GENRE_TEMPLATES[self.genre]
+            rns = (tpl * ((n_bars // len(tpl)) + 1))[:n_bars]
+        else:
+            rns, prev_fn = [], 'T'
+            for _ in range(n_bars):
+                fn = random.choice(self.FUNCTION_MARKOV[prev_fn])
+                choices = [rn for rn,f in self.RN_TO_FUNCTION.items() if f == fn]
+                rns.append(random.choice(choices))
+                prev_fn = fn
+
+        # 4) convert to chord symbols
+        chords = []
+        for rn in rns:
+            rn_obj = self._rn_obj(rn, key_str)
+            root    = rn_obj.root().name
+            quality = rn_obj.quality
+            chords.append(root + ('' if quality == 'major' else 'm'))
+        return tuple(chords)
+
+    def _make_key(self, key_str: str) -> m21key.Key:
+        parts = key_str.strip().split()
+        tonic = parts[0]
+        mode  = parts[1] if len(parts) >= 2 else 'major'
+        try:
+            # use the two‐argument Key constructor to avoid string‐parsing issues
+            return m21key.Key(tonic, mode)
+        except Exception as e:
+            logger.warning(f"_make_key: Key({tonic!r}, {mode!r}) failed: {e}. Falling back to C major.")
+            return m21key.Key('C', 'major')
+
+    def _make_roman(self, rn: str, key_str: str) -> roman.RomanNumeral:
+        try:
+            return roman.RomanNumeral(rn, self._key_obj(key_str))
+        except Exception as e:
+            logger.warning(f"_make_roman: invalid RN '{rn}' in '{key_str}': {e}. Using I in C major.")
+            return roman.RomanNumeral('I', self._key_obj("C major"))
+
+
+#File:  audio/maestro/resource_aware_arrangement_engine.py © 2025 projectemergence. All rights reserved.
+# File: src/core/audio/maestro/resource_aware_arrangement_engine.py © 2025 projectemergence
+import time
+import psutil
+from collections import deque
+from core.audio.maestro.arrangement_engine import ArrangementEngine
+
+class ResourceAwareArrangementEngine(ArrangementEngine):
+    def __init__(
+        self, client,
+        cpu_idle_threshold: float = 50.0,
+        mem_max_threshold: float = 85.0,
+        block_beats: float = 32.0,
+        max_queue_size: int = 4,
+        target_fps: float = 60.0
+    ):
+        super().__init__(client)
+        self.cpu_idle_threshold = cpu_idle_threshold
+        self.mem_max_threshold = mem_max_threshold
+        self.block_beats = block_beats
+        self.max_queue_size = max_queue_size
+        self.block_queue = deque()
+
+        # for tick-based correlation
+        self.target_dt = 1.0 / target_fps
+        self.last_tick = time.time()
+
+    def _wait_for_resources(self):
+        # Wait if CPU load or tick time too high
+        while psutil.cpu_percent(interval=0.05) > self.cpu_idle_threshold:
+            time.sleep(0.05)
+
+        # Tick-time correlation
+        current_tick = time.time()
+        actual_dt = current_tick - self.last_tick
+        self.last_tick = current_tick
+
+        if actual_dt > 1.2 * self.target_dt:  # threshold at 120% of target frame time
+            time.sleep(0.1)  # delay block prep if loop is behind
+
+    def prepare_block(self, beats: float = None):
+        beats = beats if beats else self.block_beats
+        self._wait_for_resources()
+
+        parts = super().prepare_block(beats)
+
+        # Memory-aware trimming
+        mem_usage = psutil.virtual_memory().percent
+        if mem_usage > self.mem_max_threshold:
+            keep = max(1, len(parts) // 2)
+            parts = dict(list(parts.items())[:keep])
+
+        # CPU-aware voice count scaling
+        cpu_usage = psutil.cpu_percent(interval=None)
+        max_voices = max(1, int(len(parts) * (1 - cpu_usage / 100)))
+        if len(parts) > max_voices:
+            parts = dict(list(parts.items())[:max_voices])
+
+        self.block_queue.append(parts)
+
+        # Maintain queue size
+        while len(self.block_queue) > self.max_queue_size:
+            self.block_queue.popleft()
+
+    def get_next_block(self, beats: float = None):
+        if not self.block_queue:
+            self.prepare_block(beats)
+        return self.block_queue.popleft()
+
+
+#File:  src/core/audio/__init__.py © 2025 projectemergence. All rights reserved.
+#File:  src/core/__init__.py © 2024 projectemergence. All rights reserved.
+# This file can be left empty, or you can use it to perform package-level initialization if needed.
+
+
+{
+  "title": "The Blue Danube (waltz theme)",
+  "composer": "Johann Strauss II",
+  "key": "D major",
+  "tempo": 60,
+  "time_signature": "3/4",
+  "notes": [
+    {"pitch":"F#4","frequency":369.99,"duration_beats":1},
+    {"pitch":"D4","frequency":293.66,"duration_beats":1},
+    {"pitch":"B3","frequency":246.94,"duration_beats":1},
+    {"pitch":"F#4","frequency":369.99,"duration_beats":1},
+    {"pitch":"D4","frequency":293.66,"duration_beats":1},
+    {"pitch":"B3","frequency":246.94,"duration_beats":1}
+  ]
+}
+
+
+{
+  "title": "Canon in D (ground bass)",
+  "composer": "Johann Pachelbel",
+  "key": "D major",
+  "tempo": 80,
+  "time_signature": "4/4",
+  "notes": [
+    {"pitch":"D4","frequency":293.66,"duration_beats":4},
+    {"pitch":"A3","frequency":220.00,"duration_beats":4},
+    {"pitch":"B3","frequency":246.94,"duration_beats":4},
+    {"pitch":"F#3","frequency":185.00,"duration_beats":4},
+    {"pitch":"G3","frequency":196.00,"duration_beats":4},
+    {"pitch":"D3","frequency":146.83,"duration_beats":4},
+    {"pitch":"G3","frequency":196.00,"duration_beats":4},
+    {"pitch":"A3","frequency":220.00,"duration_beats":4}
+  ]
+}
+
+
+{
+  "title": "Christians, Awake",
+  "composer": "Traditional (arr. Lowell Mason, extended)",
+  "key": "G major",
+  "tempo": 100,
+  "time_signature": "4/4",
+  "notes": [
+    {"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"A4","frequency":440.00,"duration_beats":1},
+    {"pitch":"B4","frequency":493.88,"duration_beats":2},
+    {"pitch":"C5","frequency":523.25,"duration_beats":1},
+    {"pitch":"B4","frequency":493.88,"duration_beats":1},
+    {"pitch":"A4","frequency":440.00,"duration_beats":2},
+
+    {"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},
+    {"pitch":"D4","frequency":293.66,"duration_beats":2},
+    
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},
+    {"pitch":"F#4","frequency":369.99,"duration_beats":1},
+    {"pitch":"G4","frequency":392.00,"duration_beats":2},
+
+    {"pitch":"B4","frequency":493.88,"duration_beats":1},
+    {"pitch":"C5","frequency":523.25,"duration_beats":1},
+    {"pitch":"D5","frequency":587.33,"duration_beats":2},
+
+    {"pitch":"C5","frequency":523.25,"duration_beats":1},
+    {"pitch":"B4","frequency":493.88,"duration_beats":1},
+    {"pitch":"A4","frequency":440.00,"duration_beats":2},
+
+    {"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"D4","frequency":293.66,"duration_beats":1},
+    {"pitch":"G4","frequency":392.00,"duration_beats":2}
+  ]
+}
+
+
+{
+  "title": "Für Elise, Bagatelle No. 25 in A minor",
+  "composer": "Ludwig van Beethoven",
+  "key": "A minor",
+  "tempo": 120,
+  "time_signature": "3/8",
+  "notes": [
+    {"pitch": "E5",  "frequency": 659.25, "duration_beats": 0.5},
+    {"pitch": "D#5", "frequency": 622.25, "duration_beats": 0.5},
+    {"pitch": "E5",  "frequency": 659.25, "duration_beats": 0.5},
+    {"pitch": "D#5", "frequency": 622.25, "duration_beats": 0.5},
+    {"pitch": "E5",  "frequency": 659.25, "duration_beats": 0.5},
+    {"pitch": "B4",  "frequency": 493.88, "duration_beats": 0.5},
+    {"pitch": "D5",  "frequency": 587.33, "duration_beats": 0.5},
+    {"pitch": "C5",  "frequency": 523.25, "duration_beats": 0.5},
+    {"pitch": "A4",  "frequency": 440.00, "duration_beats": 1.0},
+
+    {"pitch": "C4",  "frequency": 261.63, "duration_beats": 0.5},
+    {"pitch": "E4",  "frequency": 329.63, "duration_beats": 0.5},
+    {"pitch": "A4",  "frequency": 440.00, "duration_beats": 1.0},
+
+    {"pitch": "E5",  "frequency": 659.25, "duration_beats": 0.5},
+    {"pitch": "D#5", "frequency": 622.25, "duration_beats": 0.5},
+    {"pitch": "E5",  "frequency": 659.25, "duration_beats": 0.5},
+    {"pitch": "D#5", "frequency": 622.25, "duration_beats": 0.5},
+    {"pitch": "E5",  "frequency": 659.25, "duration_beats": 0.5},
+    {"pitch": "B4",  "frequency": 493.88, "duration_beats": 0.5},
+    {"pitch": "D5",  "frequency": 587.33, "duration_beats": 0.5},
+    {"pitch": "C5",  "frequency": 523.25, "duration_beats": 0.5},
+    {"pitch": "A4",  "frequency": 440.00, "duration_beats": 1.0}
+  ]
+}
+
+
+{
+  "title": "Greensleeves",
+  "composer": "Traditional",
+  "key": "E minor",
+  "tempo": 90,
+  "time_signature": "6/8",
+  "notes": [
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},
+    {"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"B4","frequency":493.88,"duration_beats":1},
+    {"pitch":"E5","frequency":659.25,"duration_beats":2},
+    {"pitch":"D5","frequency":587.33,"duration_beats":1},
+    {"pitch":"B4","frequency":493.88,"duration_beats":1}
+  ]
+}
+
+
+{
+  "title": "Gymnopédie No. 1",
+  "composer": "Erik Satie",
+  "key": "D major",
+  "tempo": 60,
+  "time_signature": "3/4",
+  "notes": [
+    {"pitch":"G4","frequency":392.00,"duration_beats":3},
+    {"pitch":"F#4","frequency":369.99,"duration_beats":3},
+    {"pitch":"E4","frequency":329.63,"duration_beats":3},
+    {"pitch":"D4","frequency":293.66,"duration_beats":3}
+  ]
+}
+
+
+{
+  "title": "Hyperforest Fractal",
+  "composer": "EmergenceAI",
+  "created": "2025-04-28",
+  "mood": "labyrinthine serenity",
+  "description": "A sprawling, fractal‐driven generative piece in shifting meters. Four interlocking voices loop for hours, exchange motifs and remix themselves in a living soundscape.",
+  "poem": "In branching echoes forests rise,\nEach leaf a note, each root a sigh.\nTime unwinds in fractal flight,\nInfinity in every night.",
+  "tempo": 72,
+  "time_signature": "5/4",
+  "structure": [
+    { "section": "A", "bars": 4,  "time_signature": "5/4" },
+    { "section": "B", "bars": 7,  "time_signature": "7/8" },
+    { "section": "C", "bars": 11, "time_signature": "11/8" }
+  ],
+  "variations": 4,
+  "remix": {
+    "self_shuffle": 0.35,
+    "exchange_ratio_range": [0.2, 0.5],
+    "transition_blocks": 4
+  },
+  "hands": [
+    [  /* Hand 0: Deep bass ostinato (C2–G3 pentatonic) */
+      { "frequency": 65.41, "duration": 1.00, "intensity": 0.85 },
+      { "frequency": 73.42, "duration": 0.75, "intensity": 0.88 },
+      { "frequency": 82.41, "duration": 1.25, "intensity": 0.82 },
+      { "frequency": 98.00, "duration": 0.50, "intensity": 0.90 },
+      { "frequency":110.00, "duration": 1.00, "intensity": 0.86 },
+      { "frequency":123.47, "duration": 0.75, "intensity": 0.90 },
+      { "frequency":130.81, "duration": 1.25, "intensity": 0.87 },
+      { "frequency":146.83, "duration": 0.50, "intensity": 0.89 },
+      { "frequency":164.81, "duration": 1.00, "intensity": 0.85 },
+      { "frequency":196.00, "duration": 0.75, "intensity": 0.88 },
+      { "frequency":220.00, "duration": 1.25, "intensity": 0.90 },
+      { "frequency":246.94, "duration": 0.50, "intensity": 0.86 },
+      { "frequency":261.63, "duration": 1.00, "intensity": 0.88 },
+      { "frequency":293.66, "duration": 0.75, "intensity": 0.90 },
+      { "frequency":329.63, "duration": 1.25, "intensity": 0.85 },
+      { "frequency":391.99, "duration": 0.50, "intensity": 0.90 }
+    ],
+    [  /* Hand 1: Warm mid-range arpeggio (C4–B4) */
+      { "frequency":261.63, "duration": 0.50, "intensity": 0.60 },
+      { "frequency":329.63, "duration": 0.50, "intensity": 0.62 },
+      { "frequency":392.00, "duration": 0.50, "intensity": 0.64 },
+      { "frequency":523.25, "duration": 0.50, "intensity": 0.66 },
+      { "frequency":392.00, "duration": 0.50, "intensity": 0.68 },
+      { "frequency":329.63, "duration": 0.50, "intensity": 0.70 },
+      { "frequency":261.63, "duration": 0.50, "intensity": 0.65 },
+      { "frequency":196.00, "duration": 0.50, "intensity": 0.63 },
+      { "frequency":293.66, "duration": 0.50, "intensity": 0.60 },
+      { "frequency":369.99, "duration": 0.50, "intensity": 0.62 },
+      { "frequency":440.00, "duration": 0.50, "intensity": 0.64 },
+      { "frequency":554.37, "duration": 0.50, "intensity": 0.66 },
+      { "frequency":440.00, "duration": 0.50, "intensity": 0.68 },
+      { "frequency":369.99, "duration": 0.50, "intensity": 0.70 },
+      { "frequency":293.66, "duration": 0.50, "intensity": 0.65 },
+      { "frequency":246.94, "duration": 0.50, "intensity": 0.63 }
+    ],
+    [  /* Hand 2: Airy counter-motif (E5–B5) */
+      { "frequency":659.25, "duration": 0.25, "intensity": 0.70 },
+      { "frequency":698.46, "duration": 0.25, "intensity": 0.72 },
+      { "frequency":783.99, "duration": 0.75, "intensity": 0.74 },
+      { "frequency":880.00, "duration": 0.50, "intensity": 0.76 },
+      { "frequency":783.99, "duration": 0.25, "intensity": 0.78 },
+      { "frequency":698.46, "duration": 0.75, "intensity": 0.80 },
+      { "frequency":659.25, "duration": 0.50, "intensity": 0.78 },
+      { "frequency":587.33, "duration": 0.25, "intensity": 0.76 },
+      { "frequency":523.25, "duration": 0.25, "intensity": 0.74 },
+      { "frequency":587.33, "duration": 0.75, "intensity": 0.72 },
+      { "frequency":659.25, "duration": 0.50, "intensity": 0.70 },
+      { "frequency":783.99, "duration": 0.25, "intensity": 0.72 },
+      { "frequency":880.00, "duration": 0.25, "intensity": 0.74 },
+      { "frequency":987.77, "duration": 0.75, "intensity": 0.76 },
+      { "frequency":783.99, "duration": 0.50, "intensity": 0.78 },
+      { "frequency":659.25, "duration": 0.25, "intensity": 0.80 }
+    ],
+    [  /* Hand 3: Metallic pulses (2–4 kHz sparkle) */
+      { "frequency":2000.00, "duration": 0.125, "intensity": 0.50 },
+      { "frequency":3000.00, "duration": 0.125, "intensity": 0.55 },
+      { "frequency":2500.00, "duration": 0.125, "intensity": 0.52 },
+      { "frequency":4000.00, "duration": 0.125, "intensity": 0.58 },
+      { "frequency":3500.00, "duration": 0.125, "intensity": 0.54 },
+      { "frequency":4500.00, "duration": 0.125, "intensity": 0.56 },
+      { "frequency":3000.00, "duration": 0.125, "intensity": 0.50 },
+      { "frequency":2500.00, "duration": 0.125, "intensity": 0.52 },
+      { "frequency":2000.00, "duration": 0.125, "intensity": 0.55 },
+      { "frequency":3000.00, "duration": 0.125, "intensity": 0.57 },
+      { "frequency":4000.00, "duration": 0.125, "intensity": 0.60 },
+      { "frequency":3500.00, "duration": 0.125, "intensity": 0.58 },
+      { "frequency":3000.00, "duration": 0.125, "intensity": 0.56 },
+      { "frequency":2500.00, "duration": 0.125, "intensity": 0.54 },
+      { "frequency":2000.00, "duration": 0.125, "intensity": 0.52 },
+      { "frequency":4000.00, "duration": 0.125, "intensity": 0.50 }
+    ]
+  ]
+}
+
+
+{
+  "title": "La Folia",
+  "composer": "Traditional",
+  "key": "D minor",
+  "tempo": 110,
+  "time_signature": "4/4",
+  "notes": [
+    {"pitch":"D4","frequency":293.66,"duration_beats":2},
+    {"pitch":"A4","frequency":440.00,"duration_beats":2},
+    {"pitch":"Bb4","frequency":466.16,"duration_beats":2},
+    {"pitch":"F4","frequency":349.23,"duration_beats":2},
+    {"pitch":"G4","frequency":392.00,"duration_beats":2},
+    {"pitch":"D4","frequency":293.66,"duration_beats":2},
+    {"pitch":"C4","frequency":261.63,"duration_beats":2},
+    {"pitch":"A4","frequency":440.00,"duration_beats":2}
+  ]
+}
+
+
+{
+  "title": "Minuet in G Major",
+  "composer": "Christian Petzold",
+  "key": "G major",
+  "tempo": 90,
+  "time_signature": "3/4",
+  "notes": [
+    {"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"A4","frequency":440.00,"duration_beats":1},
+    {"pitch":"B4","frequency":493.88,"duration_beats":1},
+    {"pitch":"C5","frequency":523.25,"duration_beats":1},
+    {"pitch":"B4","frequency":493.88,"duration_beats":1},
+    {"pitch":"A4","frequency":440.00,"duration_beats":1},
+    {"pitch":"G4","frequency":392.00,"duration_beats":2},
+    {"pitch":"B4","frequency":493.88,"duration_beats":1},
+    {"pitch":"A4","frequency":440.00,"duration_beats":1}
+  ]
+}
+
+
+{
+  "title": "Nocturne in E-flat Major, Op. 9 No. 2",
+  "composer": "Frédéric Chopin",
+  "key": "E♭ major",
+  "tempo": 60,
+  "time_signature": "12/8",
+  "notes": [
+    {"pitch":"B4","frequency":493.88,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
+    {"pitch":"B4","frequency":493.88,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
+    {"pitch":"D4","frequency":293.66,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
+    {"pitch":"G3","frequency":196.00,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
+    {"pitch":"D4","frequency":293.66,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
+    {"pitch":"G3","frequency":196.00,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
+
+    {"pitch":"C5","frequency":523.25,"duration_beats":1},{"pitch":"A4","frequency":440.00,"duration_beats":2},
+    {"pitch":"F4","frequency":349.23,"duration_beats":1},{"pitch":"A4","frequency":440.00,"duration_beats":2},
+    {"pitch":"C5","frequency":523.25,"duration_beats":1},{"pitch":"A4","frequency":440.00,"duration_beats":2},
+    {"pitch":"F4","frequency":349.23,"duration_beats":1},{"pitch":"A4","frequency":440.00,"duration_beats":2},
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},{"pitch":"C4","frequency":261.63,"duration_beats":2},
+    {"pitch":"A3","frequency":220.00,"duration_beats":1},{"pitch":"C4","frequency":261.63,"duration_beats":2},
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},{"pitch":"C4","frequency":261.63,"duration_beats":2},
+    {"pitch":"A3","frequency":220.00,"duration_beats":1},{"pitch":"C4","frequency":261.63,"duration_beats":2},
+
+    {"pitch":"B4","frequency":493.88,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
+    {"pitch":"B4","frequency":493.88,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
+    {"pitch":"D4","frequency":293.66,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
+    {"pitch":"G3","frequency":196.00,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
+    {"pitch":"D4","frequency":293.66,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
+    {"pitch":"G3","frequency":196.00,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
+
+    {"pitch":"C5","frequency":523.25,"duration_beats":1},{"pitch":"A4","frequency":440.00,"duration_beats":2},
+    {"pitch":"F4","frequency":349.23,"duration_beats":1},{"pitch":"A4","frequency":440.00,"duration_beats":2},
+    {"pitch":"C5","frequency":523.25,"duration_beats":1},{"pitch":"A4","frequency":440.00,"duration_beats":2},
+    {"pitch":"F4","frequency":349.23,"duration_beats":1},{"pitch":"A4","frequency":440.00,"duration_beats":2},
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},{"pitch":"C4","frequency":261.63,"duration_beats":2},
+    {"pitch":"A3","frequency":220.00,"duration_beats":1},{"pitch":"C4","frequency":261.63,"duration_beats":2},
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},{"pitch":"C4","frequency":261.63,"duration_beats":2},
+    {"pitch":"A3","frequency":220.00,"duration_beats":1},{"pitch":"C4","frequency":261.63,"duration_beats":2},
+
+    {"pitch":"G3","frequency":196.00,"duration_beats":0.5},{"pitch":"G2","frequency":98.00,"duration_beats":0.5},
+    {"pitch":"G3","frequency":196.00,"duration_beats":0.5},{"pitch":"G2","frequency":98.00,"duration_beats":0.5},
+    {"pitch":"G3","frequency":196.00,"duration_beats":0.5},{"pitch":"G2","frequency":98.00,"duration_beats":0.5},
+    {"pitch":"G3","frequency":196.00,"duration_beats":0.5},{"pitch":"G2","frequency":98.00,"duration_beats":0.5},
+    {"pitch":"C4","frequency":261.63,"duration_beats":1},{"pitch":"A3","frequency":220.00,"duration_beats":1},
+    {"pitch":"F3","frequency":174.61,"duration_beats":1},{"pitch":"A3","frequency":220.00,"duration_beats":1},
+    {"pitch":"C4","frequency":261.63,"duration_beats":1},{"pitch":"A3","frequency":220.00,"duration_beats":1},
+    {"pitch":"F3","frequency":174.61,"duration_beats":1},{"pitch":"A3","frequency":220.00,"duration_beats":1},
+
+    {"pitch":"D5","frequency":587.33,"duration_beats":0.5},{"pitch":"C5","frequency":523.25,"duration_beats":0.5},
+    {"pitch":"B4","frequency":493.88,"duration_beats":0.5},{"pitch":"C5","frequency":523.25,"duration_beats":0.5},
+    {"pitch":"D5","frequency":587.33,"duration_beats":0.5},{"pitch":"C5","frequency":523.25,"duration_beats":0.5},
+    {"pitch":"B4","frequency":493.88,"duration_beats":0.5},{"pitch":"C5","frequency":523.25,"duration_beats":0.5},
+    {"pitch":"A4","frequency":440.00,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"F4","frequency":349.23,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"A4","frequency":440.00,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"F4","frequency":349.23,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":1},
+
+    {"pitch":"B4","frequency":493.88,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
+    {"pitch":"B4","frequency":493.88,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
+    {"pitch":"D4","frequency":293.66,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
+    {"pitch":"G3","frequency":196.00,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
+    {"pitch":"D4","frequency":293.66,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
+    {"pitch":"G3","frequency":196.00,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
+
+    {"pitch":"E4","frequency":329.63,"duration_beats":2},{"pitch":"C4","frequency":261.63,"duration_beats":2},
+    {"pitch":"A3","frequency":220.00,"duration_beats":2},{"pitch":"C4","frequency":261.63,"duration_beats":2},
+    {"pitch":"E4","frequency":329.63,"duration_beats":2},{"pitch":"C4","frequency":261.63,"duration_beats":2},
+    {"pitch":"A3","frequency":220.00,"duration_beats":2},{"pitch":"C4","frequency":261.63,"duration_beats":2}
+  ]
+}
+
+
+{
+  "title": "Ode to Joy",
+  "composer": "Ludwig van Beethoven",
+  "key": "D major",
+  "tempo": 100,
+  "time_signature": "4/4",
+  "notes": [
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},
+    {"pitch":"F#4","frequency":369.99,"duration_beats":1},
+    {"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"F#4","frequency":369.99,"duration_beats":1},
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},
+    {"pitch":"D4","frequency":293.66,"duration_beats":1},
+    {"pitch":"C4","frequency":261.63,"duration_beats":1},
+    {"pitch":"C4","frequency":261.63,"duration_beats":1},
+    {"pitch":"D4","frequency":293.66,"duration_beats":1},
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},
+    {"pitch":"E4","frequency":329.63,"duration_beats":1.5},
+    {"pitch":"D4","frequency":293.66,"duration_beats":0.5}
+  ]
+}
+
+
+{
+  "title": "Prelude in C Major",
+  "composer": "Johann Sebastian Bach",
+  "key": "C major",
+  "tempo": 120,
+  "time_signature": "4/4",
+  "notes": [
+    {"pitch":"C4","frequency":261.63,"duration_beats":0.5},
+    {"pitch":"E4","frequency":329.63,"duration_beats":0.5},
+    {"pitch":"G4","frequency":392.00,"duration_beats":0.5},
+    {"pitch":"C5","frequency":523.25,"duration_beats":0.5},
+    {"pitch":"B4","frequency":493.88,"duration_beats":0.5},
+    {"pitch":"G4","frequency":392.00,"duration_beats":0.5},
+    {"pitch":"E4","frequency":329.63,"duration_beats":0.5},
+    {"pitch":"C4","frequency":261.63,"duration_beats":0.5}
+  ]
+}
+
+
+{
+  "title": "Prelude in D Minor, BWV 851",
+  "composer": "Johann Sebastian Bach",
+  "key": "D minor",
+  "tempo": 100,
+  "time_signature": "4/4",
+  "notes": [
+    {"pitch":"D4","frequency":293.66,"duration_beats":0.5},
+    {"pitch":"F4","frequency":349.23,"duration_beats":0.5},
+    {"pitch":"A4","frequency":440.00,"duration_beats":0.5},
+    {"pitch":"D5","frequency":587.33,"duration_beats":0.5},
+    {"pitch":"C5","frequency":523.25,"duration_beats":0.5},
+    {"pitch":"A4","frequency":440.00,"duration_beats":0.5},
+    {"pitch":"F4","frequency":349.23,"duration_beats":0.5},
+    {"pitch":"D4","frequency":293.66,"duration_beats":0.5},
+    {"pitch":"E4","frequency":329.63,"duration_beats":0.5},
+    {"pitch":"G4","frequency":392.00,"duration_beats":0.5},
+    {"pitch":"B♭4","frequency":466.16,"duration_beats":0.5},
+    {"pitch":"D5","frequency":587.33,"duration_beats":0.5},
+    {"pitch":"C5","frequency":523.25,"duration_beats":0.5},
+    {"pitch":"A4","frequency":440.00,"duration_beats":0.5},
+    {"pitch":"F4","frequency":349.23,"duration_beats":0.5},
+    {"pitch":"D4","frequency":293.66,"duration_beats":0.5}
+  ]
+}
+
+
+{
+  "title": "Étude Op.10 No.12 “Revolutionary” (opening)",
+  "composer": "Frédéric Chopin",
+  "key": "C minor",
+  "tempo": 144,
+  "time_signature": "2/4",
+  "notes": [
+    {"pitch":"C3","frequency":130.81,"duration_beats":0.5},
+    {"pitch":"C2","frequency":65.41,"duration_beats":0.5},
+    {"pitch":"C3","frequency":130.81,"duration_beats":0.5},
+    {"pitch":"C2","frequency":65.41,"duration_beats":0.5},
+    {"pitch":"C3","frequency":130.81,"duration_beats":0.5},
+    {"pitch":"C2","frequency":65.41,"duration_beats":0.5},
+    {"pitch":"C3","frequency":130.81,"duration_beats":0.5},
+    {"pitch":"C2","frequency":65.41,"duration_beats":0.5},
+    {"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"E♭4","frequency":311.13,"duration_beats":1},
+    {"pitch":"F4","frequency":349.23,"duration_beats":1},
+    {"pitch":"D♭4","frequency":277.18,"duration_beats":1},
+    {"pitch":"E♭4","frequency":311.13,"duration_beats":1},
+    {"pitch":"C4","frequency":261.63,"duration_beats":1},
+    {"pitch":"D♭4","frequency":277.18,"duration_beats":1},
+    {"pitch":"B3","frequency":246.94,"duration_beats":1}
+  ]
+}
+
+
+{
+  "title": "Rondo in D Major, K. 485 (theme)",
+  "composer": "Wolfgang Amadeus Mozart",
+  "key": "D major",
+  "tempo": 144,
+  "time_signature": "12/8",
+  "notes": [
+    {"pitch":"D5","frequency":587.33,"duration_beats":1},
+    {"pitch":"F#5","frequency":739.99,"duration_beats":1},
+    {"pitch":"A5","frequency":880.00,"duration_beats":1},
+    {"pitch":"B5","frequency":987.77,"duration_beats":1},
+    {"pitch":"A5","frequency":880.00,"duration_beats":1},
+    {"pitch":"F#5","frequency":739.99,"duration_beats":1},
+    {"pitch":"D5","frequency":587.33,"duration_beats":1},
+    {"pitch":"C#5","frequency":554.37,"duration_beats":1},
+    {"pitch":"B4","frequency":493.88,"duration_beats":1},
+    {"pitch":"A4","frequency":440.00,"duration_beats":1},
+    {"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"F#4","frequency":369.99,"duration_beats":1},
+    {"pitch":"E4","frequency":329.63,"duration_beats":2},
+    {"pitch":"D4","frequency":293.66,"duration_beats":2}
+  ]
+}
+
+
+{
+  "title": "Scarborough Fair (melody)",
+  "composer": "Traditional",
+  "key": "E minor",
+  "tempo": 85,
+  "time_signature": "3/4",
+  "notes": [
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},
+    {"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"A4","frequency":440.00,"duration_beats":1},
+    {"pitch":"B4","frequency":493.88,"duration_beats":1},
+    {"pitch":"A4","frequency":440.00,"duration_beats":1},
+    {"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"E4","frequency":329.63,"duration_beats":2}
+  ]
+}
+
+
+{
+  "title": "Étude in D-minor “Shadow Descent”",
+  "composer": "ChatGPT (public domain)",
+  "key": "D minor",
+  "tempo": 72,
+  "time_signature": "4/4",
+  "notes": [
+
+    {"pitch":"D3","frequency":146.83,"duration_beats":1},{"pitch":"A2","frequency":110.00,"duration_beats":1},
+    {"pitch":"D3","frequency":146.83,"duration_beats":1},{"pitch":"C3","frequency":130.81,"duration_beats":1},
+    {"pitch":"F3","frequency":174.61,"duration_beats":1},{"pitch":"D3","frequency":146.83,"duration_beats":1},
+    {"pitch":"F3","frequency":174.61,"duration_beats":1},{"pitch":"E3","frequency":164.81,"duration_beats":1},
+    {"pitch":"D4","frequency":293.66,"duration_beats":0.5},{"pitch":"C#4","frequency":277.18,"duration_beats":0.5},
+    {"pitch":"D4","frequency":293.66,"duration_beats":0.5},{"pitch":"C#4","frequency":277.18,"duration_beats":0.5},
+    {"pitch":"B3","frequency":246.94,"duration_beats":1},{"pitch":"A3","frequency":220.00,"duration_beats":1},
+    {"pitch":"G3","frequency":196.00,"duration_beats":2},
+
+    {"pitch":"A3","frequency":220.00,"duration_beats":0.5},{"pitch":"A#3","frequency":233.08,"duration_beats":0.5},
+    {"pitch":"B3","frequency":246.94,"duration_beats":0.5},{"pitch":"C4","frequency":261.63,"duration_beats":0.5},
+    {"pitch":"C#4","frequency":277.18,"duration_beats":0.5},{"pitch":"D4","frequency":293.66,"duration_beats":0.5},
+    {"pitch":"D#4","frequency":311.13,"duration_beats":0.5},{"pitch":"E4","frequency":329.63,"duration_beats":0.5},
+    {"pitch":"F4","frequency":349.23,"duration_beats":1},{"pitch":"E4","frequency":329.63,"duration_beats":1},
+    {"pitch":"D4","frequency":293.66,"duration_beats":1},{"pitch":"C4","frequency":261.63,"duration_beats":1},
+    {"pitch":"B3","frequency":246.94,"duration_beats":1},{"pitch":"A3","frequency":220.00,"duration_beats":1},
+    {"pitch":"G3","frequency":196.00,"duration_beats":2},
+
+    {"pitch":"D3","frequency":146.83,"duration_beats":0.5},{"pitch":"F3","frequency":174.61,"duration_beats":0.5},
+    {"pitch":"A3","frequency":220.00,"duration_beats":0.5},{"pitch":"C4","frequency":261.63,"duration_beats":0.5},
+    {"pitch":"D3","frequency":146.83,"duration_beats":0.5},{"pitch":"F3","frequency":174.61,"duration_beats":0.5},
+    {"pitch":"A3","frequency":220.00,"duration_beats":0.5},{"pitch":"C4","frequency":261.63,"duration_beats":0.5},
+    {"pitch":"D4","frequency":293.66,"duration_beats":1},{"pitch":"C#4","frequency":277.18,"duration_beats":1},
+    {"pitch":"B3","frequency":246.94,"duration_beats":1},{"pitch":"A3","frequency":220.00,"duration_beats":1},
+    {"pitch":"G3","frequency":196.00,"duration_beats":1},{"pitch":"F3","frequency":174.61,"duration_beats":1},
+    {"pitch":"E3","frequency":164.81,"duration_beats":2},
+
+    {"pitch":"D4","frequency":293.66,"duration_beats":0.5},{"pitch":"C4","frequency":261.63,"duration_beats":0.5},
+    {"pitch":"B3","frequency":246.94,"duration_beats":0.5},{"pitch":"A3","frequency":220.00,"duration_beats":0.5},
+    {"pitch":"G3","frequency":196.00,"duration_beats":0.5},{"pitch":"F3","frequency":174.61,"duration_beats":0.5},
+    {"pitch":"E3","frequency":164.81,"duration_beats":0.5},{"pitch":"D3","frequency":146.83,"duration_beats":0.5},
+    {"pitch":"C3","frequency":130.81,"duration_beats":1},{"pitch":"B2","frequency":123.47,"duration_beats":1},
+    {"pitch":"A2","frequency":110.00,"duration_beats":1},{"pitch":"G2","frequency":98.00,"duration_beats":1},
+    {"pitch":"F2","frequency":87.31,"duration_beats":1},{"pitch":"E2","frequency":82.41,"duration_beats":1},
+    {"pitch":"D2","frequency":73.42,"duration_beats":2},
+
+    {"pitch":"D2","frequency":73.42,"duration_beats":0.25},{"pitch":"A1","frequency":55.00,"duration_beats":0.25},
+    {"pitch":"D2","frequency":73.42,"duration_beats":0.25},{"pitch":"A1","frequency":55.00,"duration_beats":0.25},
+    {"pitch":"D2","frequency":73.42,"duration_beats":0.25},{"pitch":"A1","frequency":55.00,"duration_beats":0.25},
+    {"pitch":"D2","frequency":73.42,"duration_beats":0.25},{"pitch":"A1","frequency":55.00,"duration_beats":0.25},
+    {"pitch":"D2","frequency":73.42,"duration_beats":0.25},{"pitch":"A1","frequency":55.00,"duration_beats":0.25},
+    {"pitch":"D2","frequency":73.42,"duration_beats":0.25},{"pitch":"A1","frequency":55.00,"duration_beats":0.25},
+    {"pitch":"D2","frequency":73.42,"duration_beats":0.25},{"pitch":"A1","frequency":55.00,"duration_beats":0.25},
+    {"pitch":"D2","frequency":73.42,"duration_beats":0.25},{"pitch":"A1","frequency":55.00,"duration_beats":0.25},
+
+    {"pitch":"C5","frequency":523.25,"duration_beats":0.5},{"pitch":"B4","frequency":493.88,"duration_beats":0.5},
+    {"pitch":"A4","frequency":440.00,"duration_beats":0.5},{"pitch":"G#4","frequency":415.30,"duration_beats":0.5},
+    {"pitch":"A4","frequency":440.00,"duration_beats":0.5},{"pitch":"B4","frequency":493.88,"duration_beats":0.5},
+    {"pitch":"C5","frequency":523.25,"duration_beats":0.5},{"pitch":"B4","frequency":493.88,"duration_beats":0.5},
+    {"pitch":"A4","frequency":440.00,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"F#4","frequency":369.99,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"A4","frequency":440.00,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"F#4","frequency":369.99,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":1},
+
+    {"pitch":"D5","frequency":587.33,"duration_beats":0.5},{"pitch":"C#5","frequency":554.37,"duration_beats":0.5},
+    {"pitch":"B4","frequency":493.88,"duration_beats":0.5},{"pitch":"A4","frequency":440.00,"duration_beats":0.5},
+    {"pitch":"G4","frequency":392.00,"duration_beats":0.5},{"pitch":"F4","frequency":349.23,"duration_beats":0.5},
+    {"pitch":"E4","frequency":329.63,"duration_beats":0.5},{"pitch":"D4","frequency":293.66,"duration_beats":0.5},
+    {"pitch":"C4","frequency":261.63,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":1},
+    {"pitch":"A3","frequency":220.00,"duration_beats":1},{"pitch":"G3","frequency":196.00,"duration_beats":1},
+    {"pitch":"F3","frequency":174.61,"duration_beats":1},{"pitch":"E3","frequency":164.81,"duration_beats":1},
+    {"pitch":"D3","frequency":146.83,"duration_beats":2},
+
+    {"pitch":"D2","frequency":73.42,"duration_beats":0.5},{"pitch":"Rest","frequency":0,"duration_beats":0.5},
+    {"pitch":"D2","frequency":73.42,"duration_beats":0.5},{"pitch":"Rest","frequency":0,"duration_beats":0.5},
+    {"pitch":"D2","frequency":73.42,"duration_beats":0.5},{"pitch":"Rest","frequency":0,"duration_beats":0.5},
+    {"pitch":"D2","frequency":73.42,"duration_beats":0.5},{"pitch":"Rest","frequency":0,"duration_beats":0.5},
+    {"pitch":"C2","frequency":65.41,"duration_beats":1},{"pitch":"Rest","frequency":0,"duration_beats":1},
+    {"pitch":"A1","frequency":55.00,"duration_beats":1},{"pitch":"Rest","frequency":0,"duration_beats":1},
+    {"pitch":"D2","frequency":73.42,"duration_beats":2},{"pitch":"Rest","frequency":0,"duration_beats":2}
+  ]
+}
+
+
+{
+  "title": "Waltz of the Flowers",
+  "composer": "Pyotr Ilyich Tchaikovsky",
+  "key": "D major",
+  "tempo": 120,
+  "time_signature": "3/4",
+  "notes": [
+    {"pitch":"D5","frequency":587.33,"duration_beats":1},
+    {"pitch":"F#5","frequency":739.99,"duration_beats":1},
+    {"pitch":"A5","frequency":880.00,"duration_beats":1},
+    {"pitch":"D6","frequency":1174.66,"duration_beats":2},
+    {"pitch":"C6","frequency":1046.50,"duration_beats":1}
+  ]
+}
+
+
+# File: audio/presets/base_preset.py © 2025 projectemergence. All rights reserved.
+# File: src/core/audio/presets/base_preset.py
+
+from abc import ABC, abstractmethod
+import time
+from pyo import (Fader, Pan, SigTo, Freeverb, Chorus, ButLP, Sine)
+import inspect
+from typing import ClassVar, Dict, Type, Any
+
+class PresetMeta(type):
+    _registry: ClassVar[Dict[str, Type['BasePreset']]] = {}
+
+    def __init__(cls, name: str, bases: tuple, namespace: dict[str, Any]):
+        super().__init__(name, bases, namespace)
+        # skip the abstract BasePreset itself
+        if bases and BasePreset in bases:
+            mod_name = cls.__module__.split('.')[-1]
+            PresetMeta._registry[mod_name] = cls
+
+class BasePreset(metaclass=PresetMeta):
+
+    supports_melody: bool = True
+    def __init__(
+        self,
+        intensity: float | list[float]       = 0.7,
+        duration:  float | None               = 2.0,
+        freq1:     float | None               = None,
+        freq2:     float | None               = None,
+        # ─── optional melody parameters ───────────────────────────────
+        notes:      list[float] | None        = None,
+        durations:  list[float] | None        = None,
+        intensities:list[float] | None        = None,
+        # ───────────────────────────────────────────────────────────────
+        pan_pos:   float                      = 0.0,
+        stereo_w:  float                      = 0.0,
+        enable_reverb: bool                   = False,
+        enable_chorus: bool                   = False,
+        enable_filter: bool                   = False,
+        filt_freq: float                      = 1200,
+        **extra
+    ):
+        # allow either a single float or per-note list
+        if isinstance(intensity, list):
+            self._per_note_intensities = intensity
+            base_int = max(intensity) if intensity else 0.0
+        else:
+            self._per_note_intensities = None
+            base_int = intensity
+
+        self.intensity     = max(base_int, 0.0)
+        self.duration      = duration
+        self.freq1, self.freq2 = freq1, freq2
+        self._pan_pos      = max(min(pan_pos, 1), -1)
+        self.stereo_w      = max(min(stereo_w, 1), 0)
+        self.enable_reverb = enable_reverb
+        self.enable_chorus = enable_chorus
+        self.enable_filter = enable_filter
+        self.filt_freq     = filt_freq
+        self._keep_alive   = []               # guard vs GC
+
+        # ─── store optional melody ────────────────────────────────────
+        self.notes         = notes
+        self.durations     = durations
+        self._melody_ints  = intensities
+        # ───────────────────────────────────────────────────────────────
+
+    def _env(self, fade=.005) -> Fader:
+        dur = self.duration or 0
+        return Fader(fadein=fade, fadeout=fade*4, dur=dur, mul=self.intensity)
+
+    def _fx_chain(self, sig):
+        if self.enable_filter:
+            sig = ButLP(sig, freq=self.filt_freq)
+        if self.enable_chorus and self.stereo_w:
+            sig = Chorus(sig, depth=.8*self.stereo_w, feedback=.25, bal=.5)
+        if self.enable_reverb:
+            sig = Freeverb(sig, size=.8, bal=.35)
+        if self._pan_pos or self.stereo_w:
+            sig = Pan(sig, outs=2, pan=self._pan_pos)
+        return sig
+
+    def _keep(self, *objs):
+        self._keep_alive.extend(objs)
+        return objs[0] if objs else None
+
+    @abstractmethod
+    def _build(self):
+        """
+        Subclasses must return either
+          • a single Pyo object (dry signal), or
+          • a list of (Fader, Pyo-object) tuples for sequences.
+        """
+
+    def play(self):
+        # ─── if a melody was passed in, override build() ────────────
+        if self.notes and self.durations:
+            seq = []
+            # intensities: explicit -> per-note list -> fallback to base
+            ints = (
+                self._melody_ints
+                or self._per_note_intensities
+                or [self.intensity] * len(self.notes)
+            )
+            for f, d, i in zip(self.notes, self.durations, ints):
+                env = Fader(fadein=0.005, fadeout=0.02, dur=d, mul=i)
+                osc = Sine(freq=f, mul=env)
+                seq.append((env, osc))
+            built = seq
+        else:
+            built = self._build()
+
+        # sequence-of-notes case
+        if isinstance(built, list):
+            for fader, sig in built:
+                fader.play()
+                out = self._fx_chain(sig)
+                self._keep(out).out()
+            return built
+
+        # single-shot case
+        dry = built
+        wet = self._fx_chain(dry)
+        self._keep(wet).out()
+        return wet
+
+    def _sweep(self, start_freq, end_freq, duration, exp=False):
+        """
+        Glide from start_freq to end_freq over a given duration.
+        """
+        step = (end_freq - start_freq) / duration
+        current = start_freq
+        dt = 0.01
+        start = time.time()
+        while abs(time.time() - start) < duration:
+            current += step * dt
+        return end_freq
+
+
+# File: src/core/audio/presets/bass.py © 2025 projectemergence. All rights reserved.
+# Defines the Bass preset, with optional distortion. _build() added for architecture support.
+
+from pyo import Sine, Fader, Disto
+from core.audio.presets.base_preset import BasePreset
+
+class Bass(BasePreset):
+    def __init__(
+        self,
+        intensity=0.98,
+        duration=0.65,
+        base_freq=1318.2567385564075,
+        fade_in=0.0,
+        fade_out=0.0,
+        tone_freq_ratio=223.872113856834,
+        tone_mul_factor=0.62,
+        dist_drive=0.35,
+        dist_slope=0.44,
+        dist_mul_factor=0.56,
+    ):
+        super().__init__(intensity * 2, duration)
+        # core inputs
+        self.base_freq = 1318.2567385564075
+        # fader constants
+        self.fade_in = 0.0
+        self.fade_out = 0.0
+        # tone constants
+        self.tone_freq_ratio = 223.872113856834
+        self.tone_mul_factor = 0.62
+        # distortion constants
+        self.dist_drive = 0.35
+        self.dist_slope = 0.44
+        self.dist_mul_factor = 0.56
+
+    def _build(self):
+        # use named attributes everywhere instead of literals
+        fader = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration * 2,
+            mul=self.intensity
+        )
+        tone = Sine(
+            freq=self.base_freq * self.tone_freq_ratio,
+            mul=fader * self.tone_mul_factor
+        )
+        distorted = Disto(
+            tone,
+            drive=self.dist_drive,
+            slope=self.dist_slope,
+            mul=self.intensity * self.dist_mul_factor
+        )
+        self.chain = {"fader": fader, "tone": tone, "distorted": distorted}
+        return self.chain
+
+    def play(self):
+        chain = self._build()
+        chain["fader"].play()
+        chain["distorted"].out()
+        return chain
+
+
+# File: audio/presets/big_kick.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+# © 2025 projectemergence – v2
+
+"""
+BigKick 2.0 – modern electronic kick
+• body: exponential sine sweep for punch
+• click: tight noise burst with band-pass
+• sub: optional low sine layer
+• gating and HPF to remove noise floor
+• antialias filtering around waveshaper
+"""
+
+from pyo import Sine, Noise, ButBP, ButHP, Fader, Clip, Biquad, Gate
+from core.audio.presets.base_preset import BasePreset
+
+class BigKick(BasePreset):
+    def __init__(
+        self,
+        intensity=0.68,
+        duration=0.6,
+        freq1=160,
+        freq2=45,
+        click_len=0.015,
+        click_freq=5000,
+        add_sub=True,
+        soft_clip=True,
+        gate_thresh=0.001,
+        body_env_fadein=0.002,
+        body_sweep_ratio=0.89,
+        click_env_fadein=0.0005,
+        click_env_fadeout_ratio=0.7,
+        click_mul_factor=0.35,
+        click_bp_q=10.0,
+        sub_freq_ratio=0.5,
+        sub_mul_factor=0.5,
+        lpf_freq=20000.0,
+        lpf_q=0.707,
+        lpf_type=1,
+        clip_min=-0.9,
+        clip_max=0.9,
+        hpf_freq=20.0,
+        hpf_q=0.707,
+        hpf_type=2,
+        **kw
+    ):
+        kw.setdefault('stereo_w', 0.0)
+        kw.setdefault('enable_reverb', False)
+        super().__init__(intensity=0.68,
+                         duration=0.6,
+                         freq1=160,
+                         freq2=45,
+                         **kw)
+
+        # click parameters
+        self.click_len = 0.015
+        self.click_freq = 5000
+
+        # behavior flags
+        self.add_sub = True
+        self.soft_clip = True
+        self.gate_thresh = 0.001
+
+        # body envelope / sweep
+        self.body_env_fadein = 0.002
+        self.body_sweep_ratio = 0.89
+
+        # click envelope
+        self.click_env_fadein = 0.0005
+        self.click_env_fadeout_ratio = 0.7
+        self.click_mul_factor = 0.35
+        self.click_bp_q = 10.0
+
+        # sub oscillator
+        self.sub_freq_ratio = 0.5
+        self.sub_mul_factor = 0.5
+
+        # soft-clip / antialias filter
+        self.lpf_freq = 20000.0
+        self.lpf_q = 0.707
+        self.lpf_type = 1
+        self.clip_min = -0.9
+        self.clip_max = 0.9
+
+        # final high-pass filter
+        self.hpf_freq = 20.0
+        self.hpf_q = 0.707
+        self.hpf_type = 2
+
+    def _make_body(self, env):
+        # exponential sweep for psycho-acoustic punch
+        glide = self._sweep(
+            self.freq1,
+            self.freq2,
+            self.duration * self.body_sweep_ratio,
+            exp=True
+        )
+        return Sine(freq=glide, mul=env)
+
+    def _make_click(self):
+        env = Fader(
+            fadein=self.click_env_fadein,
+            fadeout=self.click_len * self.click_env_fadeout_ratio,
+            dur=self.click_len,
+            mul=self.intensity * self.click_mul_factor
+        ).play()
+        noise = Noise(mul=env)
+        return ButBP(noise, freq=self.click_freq, q=self.click_bp_q)
+
+    def _make_sub(self, env):
+        sub_freq = max(self.freq2 * self.sub_freq_ratio, 20.0)
+        return Sine(freq=sub_freq, mul=env * self.sub_mul_factor)
+
+    def _build(self):
+        # body envelope
+        body_env = self._env(self.body_env_fadein)
+
+        # components
+        parts = [
+            self._make_body(body_env),
+            self._make_click()
+        ]
+        if self.add_sub:
+            parts.append(self._make_sub(body_env))
+
+        mix = sum(parts)
+
+        if self.soft_clip:
+            # antialias LPF before clipping
+            mix = Biquad(
+                mix,
+                freq=self.lpf_freq,
+                q=self.lpf_q,
+                type=self.lpf_type
+            )
+            mix = Clip(mix, min=self.clip_min, max=self.clip_max)
+
+        # gate to remove residual noise
+        gated = Gate(mix, thresh=self.gate_thresh)
+
+        # high-pass to remove subsonic rumble
+        return Biquad(
+            gated,
+            freq=self.hpf_freq,
+            q=self.hpf_q,
+            type=self.hpf_type
+        )
+
+
+# File: src/core/audio/presets/cello.py © 2025 projectemergence. All rights reserved.
+# Defines a resonant cello tone. _build() added for architecture support.
+
+from pyo import Sine, Fader, Freeverb
+from core.audio.presets.base_preset import BasePreset
+
+class Cello(BasePreset):
+    def __init__(
+        self,
+        intensity=0.5,
+        duration=1.19,
+        base_freq=216.0,
+        freq_multiplier=3.0,
+        fade_in=0.2,
+        fade_out=4.29,
+        dur_multiplier=2.08,
+        fader_mul_factor=0.95,
+        tone_mul_factor=2.0,
+        reverb_input_div=2.0,
+        reverb_size=0.76,
+        reverb_bal=0.93,
+    ):
+        super().__init__(intensity, duration)
+        # core inputs
+        self.base_freq = 20.0 * freq_multiplier
+
+        # fader settings
+        self.fade_in = 0.2
+        self.fade_out = 4.29
+        self.dur_multiplier = 2.08
+        self.fader_mul_factor = 0.95
+
+        # tone settings
+        self.tone_mul_factor = 2.0
+
+        # reverb settings
+        self.reverb_input_div = 2.0
+        self.reverb_size = 0.76
+        self.reverb_bal = 0.93
+
+    def _build(self):
+        # amplitude envelope
+        fader = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration * self.dur_multiplier,
+            mul=self.intensity * self.fader_mul_factor
+        )
+        # core sine tone
+        tone = Sine(
+            freq=self.base_freq,
+            mul=fader * self.tone_mul_factor
+        )
+        # reverb effect
+        reverb = Freeverb(
+            tone / self.reverb_input_div,
+            size=self.reverb_size,
+            bal=self.reverb_bal
+        )
+        self.chain = {"fader": fader, "tone": tone, "reverb": reverb}
+        return self.chain
+
+    def play(self):
+        chain = self._build()
+        chain["fader"].play()
+        chain["reverb"].out()
+        return chain
+
+
+# File: core/audio/presets/chorus.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+
+from pyo import Noise, Chorus
+from core.audio.presets.base_preset import BasePreset
+
+class ChorusPreset(BasePreset):
+    """A simple chorus/noise layer that can thicken the drone."""
+    def __init__(
+        self,
+        *,
+        visual_metric: float = 0.0,
+        noise_vol=0.1,
+        feedback=0.6,
+        bal=0.5
+    ):
+        super().__init__()
+        self.depth = 1.0 + visual_metric * 0.5
+        self.noise_vol=noise_vol
+        self.feedback=feedback
+        self.bal=bal
+
+    def play(self):
+        return Chorus(Noise(mul=self.noise_vol),
+                      depth=self.depth,
+                      feedback=self.feedback,
+                      bal=self.bal).out()
+    def _build(self):
+        # fade-in only once, then hold
+        env = Fader(fadein=0.01, fadeout=1.0, dur=0.8, mul=0.1).play()
+        # noise source into chorus
+        noise = Noise(mul=env)
+        return Chorus(self.noise, depth=self.depth, feedback=self.feedback, bal=self.bal)
+
+
+# File: src/core/audio/presets/clarinet.py © 2025 projectemergence. All rights reserved.
+# Defines a clarinet sound with filter and distortion. _build() added for architecture support.
+
+from pyo import Sine, Fader, Disto, ButLP
+from core.audio.presets.base_preset import BasePreset
+
+class Clarinet(BasePreset):
+    def __init__(
+        self,
+        intensity=0.83,
+        duration=2.2,
+        base_freq=20.0,
+        fade_in=0.05,
+        fade_out=0.5,
+        fader_mul_factor=0.26,
+        dist_drive=0.6,
+        dist_slope=0.3,
+        dist_mul_factor=1.0,
+        filter_freq=800.0,
+    ):
+        super().__init__(intensity, duration)
+        # core
+        self.base_freq = 20.0
+        # fader settings
+        self.fade_in = 0.05
+        self.fade_out = 0.5
+        self.fader_mul_factor = 0.26
+        # distortion settings
+        self.dist_drive = 0.6
+        self.dist_slope = 0.3
+        self.dist_mul_factor = 1.0
+        # filter settings
+        self.filter_freq = 800.0
+
+    def _build(self):
+        fader = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration,
+            mul=self.intensity * self.fader_mul_factor
+        )
+        tone = Sine(
+            freq=self.base_freq,
+            mul=fader
+        )
+        distorted = Disto(
+            tone,
+            drive=self.dist_drive,
+            slope=self.dist_slope,
+            mul=self.dist_mul_factor
+        )
+        filtered = ButLP(
+            distorted,
+            freq=self.filter_freq
+        )
+        self.chain = {
+            "fader": fader,
+            "tone": tone,
+            "distorted": distorted,
+            "filtered": filtered
+        }
+        return self.chain
+
+    def play(self):
+        chain = self._build()
+        chain["fader"].play()
+        chain["filtered"].out()
+        return chain
+
+
+# File: src/core/audio/presets/digital_snap.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+"""
+DigitalSnap – hyper-tight click percussion with bit-crush and comb-style delay.
+"""
+
+from pyo import Noise, Fader, Degrade, SmoothDelay, ButHP
+from core.audio.presets.base_preset import BasePreset
+
+class DigitalSnap(BasePreset):
+    def __init__(
+        self,
+        intensity=0.8,
+        duration=1.01,
+        bit_depth=6,
+        sr_scale=0.0,
+        comb_delay=0.04,
+        comb_feedback=0.0,
+        hpf_freq=138.93,
+        fade_in=0.001,
+        fade_out=0.02,
+        crossfade=0.01,
+        **kw
+    ):
+        kw.setdefault('stereo_w', 0.0)
+        kw.setdefault('enable_reverb', False)
+        super().__init__(intensity=0.8, duration=1.01, **kw)
+
+        # bit-crusher params
+        self.bit_depth = 6
+        self.sr_scale = 0.0
+
+        # comb-style delay params (delay + feedback)
+        self.comb_delay = 0.04
+        self.comb_feedback = 0.0
+        self.crossfade = 0.01
+
+        # cleanup filter
+        self.hpf_freq = 138.93
+
+        # envelope params
+        self.fade_in = 0.001
+        self.fade_out = 0.02
+
+        # storage for the signal chain
+        self.chain = {}
+
+    def _build(self):
+        # 1) click envelope
+        env = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration,
+            mul=self.intensity
+        ).play()
+
+        # 2) white-noise click
+        noise = Noise(mul=env)
+
+        # 3) bit-crusher
+        crushed = Degrade(noise,
+                          bitdepth=self.bit_depth,
+                          srscale=self.sr_scale)
+
+        # 4) comb-style delay via SmoothDelay (delay + feedback) :contentReference[oaicite:1]{index=1}
+        combed = SmoothDelay(crushed,
+                             delay=self.comb_delay,
+                             feedback=self.comb_feedback,
+                             crossfade=0.01)
+
+        # 5) high-pass cleanup
+        cleaned = ButHP(combed, freq=self.hpf_freq)
+
+        self.chain = {
+            "env": env,
+            "crushed": crushed,
+            "combed": combed,
+            "cleaned": cleaned
+        }
+        return cleaned
+
+    def play(self):
+        out = self._build()
+        out.out()
+        return self.chain
+
+if __name__ == "__main__":
+    DigitalSnap().play()
+
+
+# File: core/audio/presets/drone.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+
+from pyo import Fader, Sine, SigTo
+from core.audio.presets.base_preset import BasePreset
+
+class DronePreset(BasePreset):
+    """Continuous drone whose level & pitch track settled_ratio & visual_metric."""
+    def __init__(self, *, settled_ratio: float = 0.0, visual_metric: float = 0.0,fade_in=0.5,fade_out=0.1,dur=0.89):
+        super().__init__()  # uses default intensity/duration
+        self.settled_ratio = 0.0
+        self.visual_metric = 0.0
+        self.fade_in=0.5
+        self.fade_out=0.1
+        self.dur=0.89
+    def play(self):
+        env  = Fader(fadein=self.fade_in, fadeout=self.fade_out, dur=0.89, mul=self.settled_ratio).play()
+        freq = SigTo(value=200 + self.visual_metric * 800, time=0.1)
+        return Sine(freq=freq, mul=env * 0.3).out()
+    def _build(self):
+        # one-liner envelope × drone
+        env = Fader(fadein=self.fade_in, fadeout=self.fade_out, dur=0.89, mul=self.intensity).play()
+        freq = SigTo(value=200 + self.visual_metric * 800, time=0.1)
+        return Sine(freq=freq, mul=env * 0.3)
+
+# File: src/core/audio/presets/fm_bell_cluster.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+"""
+FMBellCluster – FM-based bell cluster with feedback, chorus and reverb.
+"""
+
+from pyo import FM, Chorus, Freeverb, Fader
+from core.audio.presets.base_preset import BasePreset
+
+class FMBellCluster(BasePreset):
+    def __init__(
+        self,
+        intensity=0.6,
+        duration=4.0,
+        carrier_freq=330.0,
+        mod_ratio=2.0,
+        index=5.0,
+        chorus_depth=1.2,
+        chorus_feedback=0.3,
+        reverb_size=0.8,
+        reverb_bal=0.4,
+        fade_in=0.01,
+        fade_out=1.0,
+        **kw
+    ):
+        kw.setdefault('enable_reverb', True)
+        kw.setdefault('stereo_w', 0.2)
+        super().__init__(intensity=intensity, duration=duration, **kw)
+
+        # FM params
+        self.carrier_freq = carrier_freq
+        self.mod_ratio = mod_ratio
+        self.index = index
+
+        # chorus
+        self.chorus_depth = chorus_depth
+        self.chorus_feedback = chorus_feedback
+
+        # reverb
+        self.reverb_size = reverb_size
+        self.reverb_bal = reverb_bal
+
+        # envelope
+        self.fade_in = fade_in
+        self.fade_out = fade_out
+
+    def _build(self):
+        env = Fader(fadein=self.fade_in, fadeout=self.fade_out,
+                    dur=self.duration, mul=self.intensity).play()
+        # FM carrier/modulator
+        bell = FM(carrier=self.carrier_freq,
+                  ratio=self.mod_ratio,
+                  index=self.index,
+                  mul=env)
+        # add richness
+        ch = Chorus(bell, depth=self.chorus_depth,
+                    feedback=self.chorus_feedback)
+        # space
+        rv = Freeverb(ch, size=self.reverb_size,
+                      bal=self.reverb_bal)
+        self.chain = {"env": env, "bell": bell, "chorus": ch, "reverb": rv}
+        return rv
+
+    def play(self):
+        out = self._build()
+        out.out()
+        return self.chain
+
+
+# File: src/core/audio/presets/guitar.py © 2025 projectemergence. All rights reserved.
+# Simulates a plucked sine loop guitar. _build() added for architecture support.
+
+from pyo import SineLoop, Fader, Chorus
+from core.audio.presets.base_preset import BasePreset
+
+class Guitar(BasePreset):
+    def __init__(
+        self,
+        intensity=1.0,
+        duration=0.18,
+        base_freq=220.0,
+        fade_in=0.01,
+        fade_out=0.36,
+        fader_mul_factor=0.57,
+        loop_feedback=0.07,
+        chorus_depth=0.44,
+        chorus_feedback=0.14,
+        chorus_bal=0.14,
+    ):
+        super().__init__(intensity, duration)
+        # core
+        self.base_freq = 220.0
+        # fader settings
+        self.fade_in = 0.01
+        self.fade_out = 0.36
+        self.fader_mul_factor = 0.57
+        # sine-loop settings
+        self.loop_feedback = 0.07
+        # chorus settings
+        self.chorus_depth = 0.44
+        self.chorus_feedback = 0.14
+        self.chorus_bal = 0.14
+
+    def _build(self):
+        fader = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration,
+            mul=self.intensity * self.fader_mul_factor
+        )
+        tone = SineLoop(
+            freq=self.base_freq,
+            feedback=self.loop_feedback,
+            mul=fader
+        )
+        chorus = Chorus(
+            tone,
+            depth=self.chorus_depth,
+            feedback=self.chorus_feedback,
+            bal=self.chorus_bal
+        )
+        self.chain = {"fader": fader, "tone": tone, "chorus": chorus}
+        return self.chain
+
+    def play(self):
+        chain = self._build()
+        chain["fader"].play()
+        chain["chorus"].out()
+        return chain
+
+
+# File: src/core/audio/presets/harmonic_swarm.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+"""
+HarmonicSwarm – multiple detuned partials with dynamic panning and delay feedback.
+"""
+
+from random import uniform
+from pyo import Sine, Fader, Delay, Pan, Sine as LFO
+from core.audio.presets.base_preset import BasePreset
+
+class HarmonicSwarm(BasePreset):
+    def __init__(
+        self,
+        intensity=0.04,
+        duration=4.7,   
+        base_freq=110.0,
+        num_voices=6,
+        freq_ratio=1.01,
+        pan_rate=0.05,
+        pan_depth=1.0,
+        delay_times=(0.1,0.2,0.3),
+        delay_feedback=0.3,
+        delay_mul=0.4,
+        fade_in=0.005,
+        fade_out=0.01,
+        **kw
+    ):
+        kw.setdefault('enable_reverb', True)
+        kw.setdefault('stereo_w', 0.3)
+        if duration==0:
+            duration=1
+        super().__init__(intensity=0.04, duration=4.7, **kw)
+
+        # core
+        self.base_freq = 110.0
+        self.num_voices = 6
+        self.freq_ratio = 1.01
+
+        # panning LFO
+        self.pan_rate = 0.05
+        self.pan_depth = 1.0
+
+        # delay
+        self.delay_times = delay_times
+        self.delay_feedback = 0.3
+        self.delay_mul = 0.4
+
+        # envelope
+        self.fade_in = 0.005
+        self.fade_out = 0.01
+
+    def _build(self):
+        # long fade for smooth crossfade
+        gate = Fader(fadein=self.fade_in, fadeout=self.fade_out,
+                     dur=self.duration, mul=self.intensity).play()
+
+        # create voices
+        voices = []
+        for i in range(self.num_voices):
+            detune = self.base_freq * (self.freq_ratio**i)
+            osc = Sine(freq=detune, mul=gate/self.num_voices)
+            pan_lfo = LFO(freq=self.pan_rate + uniform(-0.01,0.01),
+                          mul=self.pan_depth/2, add=0.5)
+            voices.append(Pan(osc, pan=pan_lfo))
+
+        mix = sum(voices)
+        # build one Delay per tap time and sum them
+        delays = []
+        for dt in self.delay_times:
+            delays.append(Delay(mix,
+                                delay=dt,
+                                feedback=self.delay_feedback,
+                                mul=self.delay_mul))
+        delayed = sum(delays)
+        self.chain = {"gate": gate, "voices": voices, "delayed": delayed}
+        return delayed
+
+    def play(self):
+        out = self._build()
+        out.out()
+        return self.chain
+
+
+# File: src/core/audio/presets/hi_hat.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+"""
+File: audio/presets/hi_hat.py
+© 2025 projectemergence. All rights reserved.
+
+Defines the Hi-Hat preset.
+Simulates a hi-hat using filtered noise with a short burst envelope.
+Adoptez une vision tournée vers l’avenir!
+"""
+
+from pyo import Noise, Fader, ButHP
+from core.audio.presets.base_preset import BasePreset
+
+class HiHat(BasePreset):
+    def __init__(
+        self,
+        intensity=0.76,
+        duration=1.85,
+        cutoff=5654.76,
+        fade_in=0.005,
+        fade_out=0.21,
+        fader_mul_factor=0.0,
+        **kw
+    ):
+        kw.setdefault('stereo_w', 0.0)
+        kw.setdefault('enable_reverb', False)
+        super().__init__(intensity=0.76, duration=1.85, **kw)
+        # filter cutoff
+        self.cutoff = 5654.76
+        # envelope settings
+        self.fade_in = 0.005
+        self.fade_out = 0.21
+        self.fader_mul_factor = 0.0
+
+    def _build(self):
+        # short burst envelope
+        fader = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration,
+            mul=self.intensity * self.fader_mul_factor
+        )
+        noise = Noise(mul=fader)
+        hi_hat = ButHP(noise, freq=self.cutoff)
+        self.chain = {"fader": fader, "noise": noise, "hi_hat": hi_hat}
+        return self.chain
+
+    def play(self):
+        chain = self._build()
+        chain["fader"].play()
+        chain["hi_hat"].out()
+        return chain
+
+if __name__ == "__main__":
+    HiHat().play()
+
+
+# File: src/core/audio/presets/laser.py © 2025 projectemergence. All rights reserved.
+# Futuristic laser sound with FM. _build() added for architecture support.
+
+from pyo import Sine, Fader
+from core.audio.presets.base_preset import BasePreset
+
+class Laser(BasePreset):
+    def __init__(
+        self,
+        intensity=0.9,
+        duration=0.5,
+        base_freq=800.0,
+        mod_depth=50.0,
+        mod_rate=20.0,
+        fade_in=0.00,
+        fade_out=0.2,
+        fader_mul_factor=1.0,
+    ):
+        super().__init__(intensity, duration)
+        # core
+        self.base_freq = base_freq
+        self.mod_depth = mod_depth
+        self.mod_rate = mod_rate
+        # envelope settings
+        self.fade_in = fade_in
+        self.fade_out = fade_out
+        self.fader_mul_factor = fader_mul_factor
+
+    def _build(self):
+        # amplitude envelope
+        fader = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration,
+            mul=self.intensity * self.fader_mul_factor
+        )
+        # modulator oscillator
+        mod = Sine(freq=self.mod_rate, mul=self.mod_depth)
+        # frequency-modulated carrier
+        modulated_freq = self.base_freq + mod
+        laser = Sine(freq=modulated_freq, mul=fader)
+        self.chain = {"fader": fader, "mod": mod, "laser": laser}
+        return self.chain
+
+    def play(self):
+        chain = self._build()
+        chain["fader"].play()
+        chain["laser"].out()
+        return chain
+
+
+# File: audio/presets/metallic_rain.py © 2025 projectemergence. All rights reserved.
+# © 2025 projectemergence
+#!/usr/bin/env python3
+"""
+MetallicRain – spectral drizzle with stereo drift and tail.
+(Fixed kw duplication 2025-04-23.)
+"""
+
+import random, time, threading
+from pyo import Noise, ButBP, Sine, Fader, Mix
+from core.audio.presets.base_preset import BasePreset
+
+class MetallicRain(BasePreset):
+    def __init__(
+        self,
+        intensity=0.4,
+        duration=6.0,
+        grain_rate=7,
+        base_freq=432.0,
+        width=0.9,
+        fade_env=0.2,
+        hiss_mul_factor=0.1,
+        hiss_freq_ratio=1.2,
+        hiss_q=0.2,
+        sweep_start_ratio=1.8,
+        sweep_end_ratio=0.4,
+        sweep_dur=0.4,
+        drop_rand_min=0.1,
+        drop_rand_max=2.4,
+        amp_rand_min=0.3,
+        amp_rand_max=0.7,
+        rate_rand_min=0.1,
+        rate_rand_max=2.0,
+        grain_bp_ratio=1.1,
+        grain_bp_q=8.0,
+        mix_voices=2,
+        **kw
+    ):
+        kw.setdefault('stereo_w', width)
+        kw.setdefault('enable_reverb', True)
+        super().__init__(intensity=intensity, duration=duration, **kw)
+
+        # core parameters
+        self.grain_rate = grain_rate
+        self.base_freq = base_freq
+
+        # envelope / hiss
+        self.fade_env = fade_env
+        self.hiss_mul_factor = hiss_mul_factor
+        self.hiss_freq_ratio = hiss_freq_ratio
+        self.hiss_q = hiss_q
+
+        # sweep (body) parameters
+        self.sweep_start_ratio = sweep_start_ratio
+        self.sweep_end_ratio = sweep_end_ratio
+        self.sweep_dur = sweep_dur
+
+        # randomization ranges
+        self.drop_rand_min = drop_rand_min
+        self.drop_rand_max = drop_rand_max
+        self.amp_rand_min = amp_rand_min
+        self.amp_rand_max = amp_rand_max
+        self.rate_rand_min = rate_rand_min
+        self.rate_rand_max = rate_rand_max
+
+        # grain filter
+        self.grain_bp_ratio = grain_bp_ratio
+        self.grain_bp_q = grain_bp_q
+
+        # final mix
+        self.mix_voices = mix_voices
+
+    def _grain(self, freq, dur, amp):
+        """Create one grain: band-passed sine burst, auto-out."""
+        grain = ButBP(
+            Sine(freq=freq),
+            freq=freq * self.grain_bp_ratio,
+            q=self.grain_bp_q,
+            mul=amp
+        )
+        grain.out()
+        return grain
+
+    def _build(self):
+        # create shared envelope for hiss and grains
+        fade = self._env(self.fade_env)
+
+        # hiss floor
+        hiss = ButBP(
+            Noise(mul=fade * self.hiss_mul_factor),
+            freq=self.base_freq * self.hiss_freq_ratio,
+            q=self.hiss_q
+        )
+
+        # spawn grains in background
+        def rain_loop():
+            end_t = time.time() + (self.duration or 1e9)
+            while time.time() < end_t:
+                drop = self.base_freq * random.uniform(self.drop_rand_min, self.drop_rand_max)
+                glide = self._sweep(
+                    drop * self.sweep_start_ratio,
+                    drop * self.sweep_end_ratio,
+                    self.sweep_dur
+                )
+                dur = random.uniform(self.sweep_dur * 0.25, self.sweep_dur * 0.875)
+                amp = fade * random.uniform(self.amp_rand_min, self.amp_rand_max)
+                self._keep(self._grain(glide, dur, amp))
+               
+        threading.Thread(target=rain_loop, daemon=True).start()
+
+        # mix to stereo
+        mix = Mix([hiss], voices=self.mix_voices)
+        self.chain = {"fade": fade, "hiss": hiss, "mix": mix}
+        return mix
+
+    def play(self):
+        mix = self._build()
+        mix.out()
+        return self.chain
+
+if __name__ == "__main__":
+    MetallicRain().play()
+
+
+#File:  audio/presets/piano.py © 2025 projectemergence. All rights reserved.
+# File: src/core/audio/presets/piano.py © 2025 projectemergence
+
+from pyo import Sine, Fader
+from core.audio.presets.base_preset import BasePreset
+
+class Piano(BasePreset):
+    def __init__(
+        self,
+        notes,
+        durations,
+        intensity=0.8,
+        fade_in=0.01,
+        fade_out=0.15,
+        fader_mul_factor=1.0,
+    ):
+        super().__init__(intensity, duration=None)
+        self.notes = notes
+        self.durations = durations
+        self.fade_in = fade_in
+        self.fade_out = fade_out
+        self.fader_mul_factor = fader_mul_factor
+
+    def _build(self):
+        seq = []
+        for note, dur in zip(self.notes, self.durations):
+            f = Fader(fadein=self.fade_in,
+                      fadeout=self.fade_out,
+                      dur=dur,
+                      mul=self.intensity * self.fader_mul_factor)
+            s = Sine(freq=note, mul=f)
+            seq.append((f, s))
+        return seq
+
+
+# File: src/core/audio/presets/reverse_impact.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+"""
+ReverseImpact – swells that reverse-decay into impacts.
+"""
+
+from pyo import Noise, Fader, NewTable, TableRec, TableRead, ButBP, Disto
+from core.audio.presets.base_preset import BasePreset
+
+class ReverseImpact(BasePreset):
+    def __init__(
+        self,
+        intensity=0.43,
+        duration=4.23,
+        env_dur=2.2,
+        bp_freq=800.0,
+        bp_q=5.0,
+        dist_drive=0.65,
+        dist_slope=0.39,
+        fade_in=0.07,
+        fade_out=0.41,
+        **kw
+    ):
+        super().__init__(intensity=0.43, duration=4.23, **kw)
+
+        # envelope recording length
+        self.env_dur = 2.2
+        self.fade_in = 0.07
+        self.fade_out = 0.41
+
+        # bandpass
+        self.bp_freq = 800.0
+        self.bp_q = 5.0
+
+        # distortion
+        self.dist_drive = 0.65
+        self.dist_slope = 0.39
+
+    def _build(self):
+        # create reversed envelope table
+        tbl = NewTable(length=self.env_dur)
+        env = Fader(fadein=self.env_dur, fadeout=0,
+                    dur=self.env_dur, mul=self.intensity).play()
+        # record noise burst
+        rec = TableRec(Noise(mul=env), table=tbl).play()
+
+        # read it *backwards*
+        reader = TableRead(
+            table=tbl,
+            freq=-tbl.getRate(),  
+                         
+            mul=1.0
+        )
+
+        # then the rest of your chain
+        filtered  = ButBP(reader, freq=self.bp_freq, q=self.bp_q)
+        distorted = Disto(filtered,
+                          drive=self.dist_drive,
+                          slope=self.dist_slope,
+                          mul=1.0)
+
+        self.chain = {
+            "env": env,
+            "rec": rec,
+            "reader": reader,
+            "filtered": filtered,
+            "distorted": distorted
+        }
+        return distorted
+
+
+    def play(self):
+        out = self._build()
+        out.out()
+        return self.chain
+
+
+# File: src/core/audio/presets/snare.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+"""
+File: audio/presets/snare.py
+© 2025 projectemergence. All rights reserved.
+
+Defines the Snare preset.
+Simulates a snare drum using a short burst of noise filtered with a narrow bandpass.
+Adoptez une vision tournée vers l’avenir!
+"""
+
+from pyo import Noise, Fader, ButBP
+from core.audio.presets.base_preset import BasePreset
+
+class Snare(BasePreset):
+    def __init__(
+        self,
+        intensity=0.64,
+        duration=0.54,
+        center_freq=19.952623149688797,
+        fade_in=0.01,
+        fade_out=0.2,
+        fader_mul_factor=1.0,
+        **kw
+    ):
+        # ensure stereo and reverb defaults
+        kw.setdefault('stereo_w', 0.0)
+        kw.setdefault('enable_reverb', False)
+        super().__init__(intensity=0.64, duration=0.54, **kw)
+
+        # filter center frequency
+        self.center_freq = 19.952623149688797
+
+        # envelope settings
+        self.fade_in = 0.01
+        self.fade_out = 0.2
+        self.fader_mul_factor = 1.0
+
+        # storage for built objects
+        self.chain = {}
+
+    def _build(self):
+        # create the burst envelope
+        fader = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration,
+            mul=self.intensity * self.fader_mul_factor
+        )
+        # noise source
+        noise = Noise(mul=fader)
+        # band-pass filter for snare character
+        snare = ButBP(noise, freq=self.center_freq)
+
+        self.chain = {"fader": fader, "noise": noise, "snare": snare}
+        return snare
+
+    def play(self):
+        snare = self._build()
+        # start envelope and output
+        self.chain["fader"].play()
+        snare.out()
+        return self.chain
+
+if __name__ == "__main__":
+    Snare().play()
+
+
+# File: core/audio/presets/square_fall.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+
+from pyo import Fader, Sine, IRPulse
+from core.audio.presets.base_preset import BasePreset
+
+class SquareFallPreset(BasePreset):
+    """Burst of harmonics into a comb filter (square-fall)."""
+    def __init__(self, *, intensity: float = 0.5, freq: float = 200, harmonics: int = 6):
+        super().__init__()
+        self.intensity = intensity
+        self.freq      = freq
+        self.harmonics = harmonics
+
+    def play(self):
+        env   = Fader(fadein=0.01, fadeout=0.25, dur=0.25, mul=self.intensity).play()
+        burst = sum(Sine(freq=self.freq * (i+1), mul=env / (i+1))
+                    for i in range(self.harmonics))
+        IRPulse(input=burst, order=2048).out()
+        return burst
+    def _build(self):
+        # envelope & additive burst
+        env = Fader(fadein=0.01, fadeout=0.25, dur=0.25, mul=self.intensity).play()
+        burst = sum(
+            Sine(freq=self.freq * (i + 1), mul=env / (i + 1))
+            for i in range(self.harmonics)
+        )
+        IRPulse(input=burst, order=2048).out()
+        return burst
+
+# File: src/core/audio/presets/trumpet.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+"""
+File: audio/presets/trumpet.py
+© 2025 projectemergence. All rights reserved.
+
+Defines the Trumpet preset.
+Emulates a bright brass sound with a characteristically brassy vibrato and warm filtering.
+Adoptez une vision tournée vers l’avenir!
+"""
+
+from pyo import Sine, Fader, Chorus, ButLP, SigTo
+from core.audio.presets.base_preset import BasePreset
+
+class Trumpet(BasePreset):
+    def __init__(
+        self,
+        intensity=0.8,
+        duration=1.5,
+        base_freq=440.0,
+        vibrato_rate=6.0,
+        vibrato_depth=10.0,
+        fade_in=0.05,
+        fade_out=0.7,
+        fader_mul_factor=1.0,
+        sigto_time_factor=1.0,
+        lp_freq=1000.0,
+        chorus_depth=1.0,
+        chorus_feedback=0.25,
+        chorus_bal=0.5,
+        **kw
+    ):
+        kw.setdefault('stereo_w', 0.0)
+        kw.setdefault('enable_reverb', False)
+        super().__init__(intensity=intensity, duration=duration, **kw)
+
+        # core tone parameters
+        self.base_freq = base_freq
+        self.vibrato_rate = vibrato_rate
+        self.vibrato_depth = vibrato_depth
+
+        # envelope settings
+        self.fade_in = fade_in
+        self.fade_out = fade_out
+        self.fader_mul_factor = fader_mul_factor
+
+        # SigTo (smooth freq) timing
+        self.sigto_time_factor = sigto_time_factor
+
+        # filtering
+        self.lp_freq = lp_freq
+
+        # chorus effect
+        self.chorus_depth = chorus_depth
+        self.chorus_feedback = chorus_feedback
+        self.chorus_bal = chorus_bal
+
+    def _build(self):
+        # amplitude envelope
+        fader = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration,
+            mul=self.intensity * self.fader_mul_factor
+        )
+        # smooth base frequency holder
+        freq_mod = SigTo(
+            value=self.base_freq,
+            time=self.duration * self.sigto_time_factor
+        )
+        # vibrato oscillator
+        vibrato = Sine(freq=self.vibrato_rate, mul=self.vibrato_depth)
+        # combine base freq and vibrato
+        modulated_freq = freq_mod + vibrato
+        # carrier tone
+        tone = Sine(freq=modulated_freq, mul=fader)
+        # warm low-pass filter
+        filtered = ButLP(tone, freq=self.lp_freq)
+        # richness via chorus
+        chorus = Chorus(
+            filtered,
+            depth=self.chorus_depth,
+            feedback=self.chorus_feedback,
+            bal=self.chorus_bal
+        )
+
+        self.chain = {
+            "fader": fader,
+            "freq_mod": freq_mod,
+            "vibrato": vibrato,
+            "tone": tone,
+            "filtered": filtered,
+            "chorus": chorus
+        }
+        return chorus
+
+    def play(self):
+        out = self._build()
+        self.chain["fader"].play()
+        out.out()
+        return self.chain
+
+if __name__ == "__main__":
+    Trumpet().play()
+
+
+# File: src/core/audio/presets/two_freq_drones.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+# © 2025 projectemergence
+
+"""
+TwoFreqDrones – subtle, continuously-evolving dual-sine drone.
+• Always-on; no need to reschedule-loop.
+• Slow random drift on both oscillators via band-limited LFO.
+• Dual Faders give click-free start/stop and enable cross-fade
+  when the engine really has to restart the preset.
+"""
+
+from random import random
+from pyo import Sine, Fader, Sine as LFO
+from core.audio.presets.base_preset import BasePreset   # unchanged
+
+class TwoFreqDrones(BasePreset):
+    def __init__(
+        self,
+        base_freq=65.4,
+        ratio=4/3,
+        drift_speed=0.04,
+        intensity=0.5,
+        fade=2.0,
+        drift_mul_ratio=0.015,
+        osc_amp_factor=0.5,
+        mix_voices=2,
+        **kw
+    ):
+        kw.setdefault('enable_reverb', True)
+        kw.setdefault('stereo_w', 0.3)
+        # duration=0 => infinite
+        super().__init__(intensity=intensity, duration=0, **kw)
+
+        # core parameters
+        self.base_freq = base_freq
+        self.ratio = ratio
+
+        # drift LFO
+        self.drift_speed = drift_speed
+        self.drift_mul_ratio = drift_mul_ratio
+
+        # cross-fade gate
+        self.fade = fade
+
+        # oscillator amplitude relative to gate
+        self.osc_amp_factor = osc_amp_factor
+
+        # mixing
+        self.mix_voices = mix_voices
+
+    def _drifting_osc(self, freq, amp):
+        """Band-limited LFO to drift the oscillator frequency ±drift_mul_ratio."""
+        drift = LFO(
+            freq=self.drift_speed,
+            phase=random(),
+            mul=freq * self.drift_mul_ratio,
+            add=freq
+        )
+        return Sine(freq=drift, mul=amp)
+
+    def _build(self):
+        # gate fader for crossfade
+        gate = Fader(
+            fadein=self.fade,
+            fadeout=self.fade,
+            dur=self.duration,
+            mul=self.intensity
+        ).play()
+
+        # two drifting oscillators
+        osc_a = self._drifting_osc(self.base_freq, gate * self.osc_amp_factor)
+        osc_b = self._drifting_osc(self.base_freq * self.ratio, gate * self.osc_amp_factor)
+
+        # mix to stereo voices
+        mix = (osc_a + osc_b).mix(self.mix_voices)
+
+        # store chain
+        self.chain = {"gate": gate, "osc_a": osc_a, "osc_b": osc_b, "mix": mix}
+        return mix
+
+    def play(self):
+        out = self._build()
+        out.out()
+        return self.chain
+
+if __name__ == "__main__":
+    TwoFreqDrones().play()
+
+# File: src/core/audio/presets/violin.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+"""
+File: audio/presets/violin.py
+© 2025 projectemergence. All rights reserved.
+
+Defines the Violin preset.
+Simulates a bowed string instrument using a sine oscillator with vibrato.
+Adoptez une vision tournée vers l’avenir!
+"""
+
+from pyo import Sine, Fader
+from core.audio.presets.base_preset import BasePreset
+
+class Violin(BasePreset):
+    def __init__(
+        self,
+        intensity=0.5,
+        duration=3.0,
+        base_freq=4063.57,
+        vibrato_rate=5.0,
+        vibrato_depth=5.0,
+        fade_in=0.1,
+        fade_out=0.5,
+        fader_mul_factor=0.46,
+    ):
+        super().__init__(intensity, duration)
+        # core tone params
+        self.base_freq = 4063.57
+        self.vibrato_rate = 5.0
+        self.vibrato_depth = 5.0
+        # envelope params
+        self.fade_in = 0.1
+        self.fade_out = 0.5
+        self.fader_mul_factor = 0.46
+        # storage for chain
+        self.chain = {}
+
+    def _build(self):
+        # amplitude envelope
+        fader = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration,
+            mul=self.intensity * self.fader_mul_factor
+        )
+        # vibrato LFO
+        vibrato = Sine(freq=self.vibrato_rate, mul=self.vibrato_depth)
+        # modulated carrier
+        modulated_freq = self.base_freq + vibrato
+        tone = Sine(freq=modulated_freq, mul=fader)
+        self.chain = {"fader": fader, "vibrato": vibrato, "tone": tone}
+        return self.chain
+
+    def play(self):
+        chain = self._build()
+        chain["fader"].play()
+        chain["tone"].out()
+        return chain
+
+if __name__ == "__main__":
+    Violin().play()
+
+# File: src/core/audio/presets/whale_calls.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+"""
+File: audio/presets/whale_calls.py
+© 2025 projectemergence. All rights reserved.
+
+Defines the WhaleCalls preset class.
+Provides a low–frequency whale call preset.
+
+Adoptez une vision tournée vers l’avenir!
+"""
+
+from pyo import Sine, Fader
+from core.audio.presets.base_preset import BasePreset
+
+class WhaleCalls(BasePreset):
+    def __init__(
+        self,
+        intensity=0.4,
+        duration=4.0,
+        freq=110.0,
+        fade_in=1.0,
+        fade_out=1.0,
+        fader_mul_factor=1.0,
+        **kw
+    ):
+        kw.setdefault('stereo_w', 0.0)
+        kw.setdefault('enable_reverb', False)
+        super().__init__(intensity=intensity, duration=duration, **kw)
+        # core frequency
+        self.freq = freq
+        # envelope settings
+        self.fade_in = fade_in
+        self.fade_out = fade_out
+        self.fader_mul_factor = fader_mul_factor
+        # storage for chain
+        self.chain = {}
+
+    def _build(self):
+        # amplitude envelope
+        fader = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration,
+            mul=self.intensity * self.fader_mul_factor
+        )
+        # carrier sine for whale call
+        sine = Sine(freq=self.freq, mul=fader)
+        self.chain = {"fader": fader, "sine": sine}
+        return sine
+
+    def play(self):
+        sine = self._build()
+        self.chain["fader"].play()
+        sine.out()
+        return self.chain
+
+if __name__ == "__main__":
+    WhaleCalls().play()
+
+
+# File: src/core/audio/presets/wood_kick.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+# © 2025 projectemergence. All rights reserved.
+
+"""
+WoodKick – a clean, wooden-character kick with minimal noise.
+Technique enhancements:
+ • body: sine sweep (45→400 Hz) with high-pass DC removal
+ • click: band-limited noise burst with high-pass cleanup
+ • separate multi-stage envelopes for tight attack & body
+ • gentle tanh saturation with pre-filter antialiasing
+"""
+
+from pyo import Sine, Noise, ButBP, ButHP, Biquad, Fader, SigTo, Tanh
+from core.audio.presets.base_preset import BasePreset
+
+class WoodKick(BasePreset):
+    def __init__(
+        self,
+        intensity=0.3,
+        duration=0.36,
+        click_freq=1200.0,
+        hp_cut=200.0,
+        body_sweep_ratio=0.8,
+        body_mul_factor=1.9,
+        body_hpf_freq=20.0,
+        body_hpf_q=0.707,
+        body_hpf_type=2,
+        click_env_fadein=0.0005,
+        click_env_fadeout=0.05,
+        click_env_dur=0.05,
+        click_mul_factor=2.0,
+        click_bp_q=55.0,
+        sat_mul=1.5,
+        sat_hpf_freq=200.0,
+        sat_hpf_q=0.307,
+        sat_hpf_type=2,
+        **kw
+    ):
+        kw.setdefault('stereo_w', 0.0)
+        kw.setdefault('enable_reverb', False)
+        super().__init__(
+            intensity=2 * intensity,
+            duration=duration,
+            freq1=45.0,
+            freq2=400.0,
+            **kw
+        )
+        # click
+        self.click_freq = click_freq
+        self.hp_cut = hp_cut
+        # body
+        self.body_sweep_ratio = body_sweep_ratio
+        self.body_mul_factor = body_mul_factor
+        self.body_hpf_freq = body_hpf_freq
+        self.body_hpf_q = body_hpf_q
+        self.body_hpf_type = body_hpf_type
+        # click envelope
+        self.click_env_fadein = click_env_fadein
+        self.click_env_fadeout = click_env_fadeout
+        self.click_env_dur = click_env_dur
+        self.click_mul_factor = click_mul_factor
+        self.click_bp_q = click_bp_q
+        # saturation
+        self.sat_mul = sat_mul
+        self.sat_hpf_freq = sat_hpf_freq
+        self.sat_hpf_q = sat_hpf_q
+        self.sat_hpf_type = sat_hpf_type
+
+    def _body(self, env):
+        glide = self._sweep(
+            self.freq1,
+            self.freq2,
+            self.duration * self.body_sweep_ratio,
+            exp=False
+        )
+        osc = Sine(freq=glide, mul=env * self.body_mul_factor)
+        return Biquad(
+            osc,
+            freq=self.body_hpf_freq,
+            q=self.body_hpf_q,
+            type=self.body_hpf_type
+        )
+
+    def _click(self):
+        env = Fader(
+            fadein=self.click_env_fadein,
+            fadeout=self.click_env_fadeout,
+            dur=self.click_env_dur,
+            mul=self.click_mul_factor * self.intensity
+        ).play()
+        noise = Noise(mul=env)
+        bp = ButBP(noise, freq=self.click_freq, q=self.click_bp_q)
+        return ButHP(bp, freq=self.hp_cut)
+
+    def _build(self):
+        env = self._env(.005)
+        mix = self._body(env) + self._click()
+        sat = Tanh(mix * self.sat_mul)
+        out = Biquad(
+            sat,
+            freq=self.sat_hpf_freq,
+            q=self.sat_hpf_q,
+            type=self.sat_hpf_type
+        )
+        self.chain = {"body_env": env, "mix": mix, "out": out}
+        return out
+
+    def play(self):
+        out = self._build()
+        # start body envelope
+        self.chain["body_env"].play()
+        out.out()
+        return self.chain
+
+if __name__ == "__main__":
+    WoodKick().play()
+
+
+#File:  src/core/audio/__init__.py © 2025 projectemergence. All rights reserved.
+#File:  src/core/__init__.py © 2024 projectemergence. All rights reserved.
+# This file can be left empty, or you can use it to perform package-level initialization if needed.
+
+
+#File:  src/core/speech/speech_manager.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+"""
+File: src/core/speech/speech_audio_manager.py
+© 2024 projectemergence. All rights reserved.
+
+Revised version to fix the issue where speech only works once. This version creates a persistent
+pyttsx3 engine (instead of reinitializing it per utterance) and adds a longer delay before removing
+temporary audio files to ensure the pyo server has sufficient time to load them.
+
+Adoptez une vision tournée vers l’avenir!
+"""
+
+import pyttsx3
+import queue
+import random
+import time
+import os
+import tempfile
+from threading import Thread
+from pyo import Server, SfPlayer, Harmonizer, Granulator, Freeverb, Disto, Degrade, Noise, ButLP
+
+class SpeechManager:
+    def __init__(self, default_voice_id=None, default_rate=175, default_volume=1.0,
+                 sample_rate=44100, buffersize=512):
+        self.default_rate = default_rate
+        self.default_volume = default_volume
+        self.default_voice_id = default_voice_id
+
+        self.speech_queue = queue.Queue()
+
+        self.engine = pyttsx3.init()
+        self.engine.setProperty('rate', self.default_rate)
+        self.engine.setProperty('volume', self.default_volume)
+        if self.default_voice_id:
+            self.engine.setProperty('voice', self.default_voice_id)
+
+        self.tts_thread = Thread(target=self._run_tts_engine, daemon=True)
+        self.tts_thread.start()
+
+        self.server = Server(sr=sample_rate, buffersize=buffersize, nchnls=2).boot()
+        self.server.start()
+
+        self.current_player = None
+
+    def _determine_style(self, text, context):
+        if context.get("modem", False):
+            return "modem56k"
+        if context.get("idle", False):
+            return "humming"
+        word_count = len(text.split())
+        style = "robot" if word_count > 2 else "short"
+        if word_count >= 10:
+            style = "long"
+        if context.get("order_direction", 1) < 0:
+            style = "trembling"
+        elif context.get("order_direction", 1) > 0:
+            style = "robot"
+        if abs(context.get("global_angle", 0)) > 1.0:
+            style = "calabiyau"
+        if context.get("frame_counter", 0) % context.get("num_frames_per_transition", 128) < 10:
+            style = "robot"
+        return style
+
+    def _transform_text_for_effects(self, text, style):
+        if style in ["trembling", "long", "modem56k"]:
+            return " ".join(word[0] + "-" + word if len(word) > 3 and random.random() < 0.2 else word
+                            for word in text.split())
+        return text
+
+    def _apply_tts_style(self, engine, style, text):
+        voices = engine.getProperty('voices')
+        if style == "robot":
+            robot_voice = next((v.id for v in voices if "robot" in v.name.lower()), (voices[0].id if voices else None))
+            engine.setProperty('voice', robot_voice)
+            engine.setProperty('rate', 150)
+        elif style == "short":
+            engine.setProperty('voice', voices[0].id if voices else self.default_voice_id)
+            engine.setProperty('rate', 200)
+        elif style == "long":
+            engine.setProperty('voice', voices[0].id if voices else self.default_voice_id)
+            engine.setProperty('rate', 170)
+        elif style == "calabiyau":
+            engine.setProperty('voice', voices[0].id if voices else self.default_voice_id)
+            engine.setProperty('rate', 160)
+        elif style == "trembling":
+            engine.setProperty('voice', voices[0].id if voices else self.default_voice_id)
+            engine.setProperty('rate', 180)
+        elif style == "repeat":
+            engine.setProperty('voice', voices[0].id if voices else self.default_voice_id)
+            engine.setProperty('rate', 180)
+        elif style == "humming":
+            engine.setProperty('voice', voices[0].id if voices else self.default_voice_id)
+            engine.setProperty('rate', 90)
+            engine.setProperty('volume', 0.8)
+            text = "♪ mmm mmm mmm ♪"
+        elif style == "modem56k":
+            engine.setProperty('voice', voices[0].id if voices else self.default_voice_id)
+            engine.setProperty('rate', 140)
+            engine.setProperty('volume', 0.9)
+        else:
+            engine.setProperty('voice', self.default_voice_id if self.default_voice_id else (voices[0].id if voices else ""))
+            engine.setProperty('rate', self.default_rate)
+            engine.setProperty('volume', self.default_volume)
+        return text
+
+    def _safe_remove(self, filename, attempts=10, delay=0.5):
+        for _ in range(attempts):
+            try:
+                os.remove(filename)
+                return
+            except Exception:
+                time.sleep(delay)
+        print(f"Warning: Could not remove temporary file {filename} after {attempts} attempts.")
+
+    def _play_audio(self, filename, context):
+        if self.current_player is not None:
+            self.current_player.stop()
+        snd = SfPlayer(filename, speed=1, loop=False)
+        style = self._determine_style("", context)
+        pitch_shift = 4 if context.get("global_angle", 0) > 1.0 else -4 if context.get("global_angle", 0) < -1.0 else 0
+        if pitch_shift:
+            snd = Harmonizer(snd, transpo=pitch_shift)
+        if context.get("idle", False):
+            snd = Granulator(snd, grainSize=0.05, overlap=0.3, pitch=1.0, mul=0.8)
+        rev_amount = 0.3 if context.get("order_direction", 1) > 0 else 0.7
+        proc = Freeverb(snd, size=rev_amount, bal=0.4)
+        if style == "modem56k":
+            proc = Disto(proc, drive=0.8, slope=0.5, mul=0.8)
+            proc = Degrade(proc, bitdepth=8, srscale=0.5)
+            proc = proc + Noise(mul=0.05)
+            proc = ButLP(proc, freq=3000)
+        self.current_player = proc
+        proc.out()
+        print(f"Playing audio from {filename} with style '{style}'.")
+
+    def _run_tts_engine(self):
+        while True:
+            try:
+                item = self.speech_queue.get(block=True)
+                if item is None:
+                    break
+                text, context = item
+                if text == "__STOP__":
+                    self.engine.stop()
+                    if self.current_player is not None:
+                        self.current_player.stop()
+                    continue
+                engine = self.engine
+                engine.setProperty('rate', self.default_rate)
+                engine.setProperty('volume', self.default_volume)
+                if self.default_voice_id:
+                    engine.setProperty('voice', self.default_voice_id)
+                style = self._determine_style(text, context)
+                text = self._transform_text_for_effects(text, style)
+                text = self._apply_tts_style(engine, style, text)
+                with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+                    temp_filename = tmp.name
+                engine.save_to_file(text, temp_filename)
+                engine.runAndWait()
+                self._play_audio(temp_filename, context)
+                time.sleep(0.5)
+                self._safe_remove(temp_filename)
+                print(f"Utterance '{text}' processed.")
+            except queue.Empty:
+                continue
+
+    def speak(self, text, context=None):
+        if context is None:
+            context = {}
+        self.speech_queue.put((text, context))
+        print(f"Queued text: {text}")
+
+    def stop_speaking(self):
+        try:
+            while True:
+                self.speech_queue.get_nowait()
+        except queue.Empty:
+            pass
+        self.speech_queue.put(("__STOP__", {}))
+        print("Stop command issued.")
+
+    def shutdown(self):
+        self.speech_queue.put(None)
+        self.tts_thread.join(timeout=2)
+        self.server.stop()
+        self.server.shutdown()
+        print("Shutdown complete.")
+
+
+#File:  src/core/speech/__init__.py © 2025 projectemergence. All rights reserved.
+#File:  src/core/__init__.py © 2024 projectemergence. All rights reserved.
+# This file can be left empty, or you can use it to perform package-level initialization if needed.
+
+

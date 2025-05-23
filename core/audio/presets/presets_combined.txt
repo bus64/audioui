@@ -1,0 +1,1919 @@
+Source Directory: presets
+
+#File:  audio/presets/base_preset.py © 2025 projectemergence. All rights reserved.
+# File: src/core/audio/presets/base_preset.py
+
+from abc import ABC, abstractmethod
+import math, time
+from pyo import (Fader, Pan, SigTo, Freeverb, Chorus, ButBP, ButLP)
+
+class BasePreset(ABC):
+    def __init__(
+        self,
+        intensity: float | list[float] = 0.7,
+        duration:  float | None       = 2.0,
+        freq1:     float | None       = None,
+        freq2:     float | None       = None,
+        pan_pos:   float              = 0.0,
+        stereo_w:  float              = 0.0,
+        enable_reverb: bool           = False,
+        enable_chorus: bool           = False,
+        enable_filter: bool           = False,
+        filt_freq: float              = 1200,
+        **extra
+    ):
+        # allow either a single float or per-note list
+        if isinstance(intensity, list):
+            # keep full list for subclass
+            self._per_note_intensities = intensity
+            base_int = max(intensity) if intensity else 0.0
+        else:
+            self._per_note_intensities = None
+            base_int = intensity
+
+        self.intensity    = max(base_int, 0.0)
+        self.duration     = duration
+        self.freq1, self.freq2 = freq1, freq2
+        self._pan_pos     = max(min(pan_pos, 1), -1)
+        self.stereo_w     = max(min(stereo_w, 1), 0)
+        self.enable_reverb  = enable_reverb
+        self.enable_chorus  = enable_chorus
+        self.enable_filter  = enable_filter
+        self.filt_freq      = filt_freq
+        self._keep_alive = []               # guard vs GC
+
+    def _env(self, fade=.005) -> Fader:
+        dur = self.duration or 0
+        return Fader(fadein=fade, fadeout=fade*4, dur=dur, mul=self.intensity)
+
+    def _fx_chain(self, sig):
+        if self.enable_filter:
+            sig = ButLP(sig, freq=self.filt_freq)
+        if self.enable_chorus and self.stereo_w:
+            sig = Chorus(sig, depth=.8*self.stereo_w, feedback=.25, bal=.5)
+        if self.enable_reverb:
+            sig = Freeverb(sig, size=.8, bal=.35)
+        if self._pan_pos or self.stereo_w:
+            sig = Pan(sig, outs=2, pan=self._pan_pos)
+        return sig
+
+    def _keep(self, *objs):
+        self._keep_alive.extend(objs)
+        return objs[0] if objs else None
+
+    @abstractmethod
+    def _build(self):
+        """
+        Subclasses must return either
+          • a single Pyo object (dry signal), or
+          • a list of (Fader, Pyo-object) tuples for sequences.
+        """
+
+    def play(self):
+        built = self._build()
+
+        # if a sequence of (fader,signal), schedule them:
+        if isinstance(built, list):
+            for fader, sig in built:
+                fader.play()
+                out = self._fx_chain(sig)
+                self._keep(out).out()
+                # wait for this note’s duration before next
+                time.sleep(fader.dur)
+            return built
+
+        # otherwise single-shot as before
+        dry = built
+        wet = self._fx_chain(dry)
+        self._keep(wet).out()
+        return wet
+    def _sweep(self, start_freq, end_freq, duration):
+        """
+        Glide from start_freq to end_freq over a given duration.
+        This can be useful for smooth transitions in sound design.
+
+        Args:
+            start_freq (float): Starting frequency for the glide.
+            end_freq (float): Ending frequency for the glide.
+            duration (float): Duration for the glide in seconds.
+
+        Returns:
+            float: The frequency value after applying the glide.
+        """
+        step = (end_freq - start_freq) / duration
+        current_freq = start_freq
+        time_step = 0.01  # Update every 10ms, you can adjust this based on your needs
+
+        # Apply the glide over time
+        while current_freq != end_freq:
+            current_freq += step * time_step
+            if abs(current_freq - end_freq) < abs(step * time_step):
+                current_freq = end_freq
+            time.sleep(time_step)  # Simulate time delay for smooth transition
+        return current_freq
+
+# File: src/core/audio/presets/bass.py © 2025 projectemergence. All rights reserved.
+# Defines the Bass preset, with optional distortion. _build() added for architecture support.
+
+from pyo import Sine, Fader, Disto
+from core.audio.presets.base_preset import BasePreset
+
+class Bass(BasePreset):
+    def __init__(
+        self,
+        intensity=1.0,
+        duration=0.65,
+        base_freq=733.57,
+        fade_in=0.01,
+        fade_out=0.03,
+        tone_freq_ratio=20.0,
+        tone_mul_factor=0.68,
+        dist_drive=0.81,
+        dist_slope=1.0,
+        dist_mul_factor=0.93,
+    ):
+        super().__init__(intensity * 2, duration)
+        # core inputs
+        self.base_freq = 733.57
+        # fader constants
+        self.fade_in = 0.01
+        self.fade_out = 0.03
+        # tone constants
+        self.tone_freq_ratio = 20.0
+        self.tone_mul_factor = 0.68
+        # distortion constants
+        self.dist_drive = 0.81
+        self.dist_slope = 1.0
+        self.dist_mul_factor = 0.93
+
+    def _build(self):
+        # use named attributes everywhere instead of literals
+        fader = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration * 2,
+            mul=self.intensity
+        )
+        tone = Sine(
+            freq=self.base_freq * self.tone_freq_ratio,
+            mul=fader * self.tone_mul_factor
+        )
+        distorted = Disto(
+            tone,
+            drive=self.dist_drive,
+            slope=self.dist_slope,
+            mul=self.intensity * self.dist_mul_factor
+        )
+        self.chain = {"fader": fader, "tone": tone, "distorted": distorted}
+        return self.chain
+
+    def play(self):
+        chain = self._build()
+        chain["fader"].play()
+        chain["distorted"].out()
+        return chain
+
+
+# File: audio/presets/big_kick.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+# © 2025 projectemergence – v2
+
+"""
+BigKick 2.0 – modern electronic kick
+• body: exponential sine sweep for punch
+• click: tight noise burst with band-pass
+• sub: optional low sine layer
+• gating and HPF to remove noise floor
+• antialias filtering around waveshaper
+"""
+
+from pyo import Sine, Noise, ButBP, ButHP, Fader, Clip, Biquad, Gate
+from core.audio.presets.base_preset import BasePreset
+
+class BigKick(BasePreset):
+    def __init__(
+        self,
+        intensity=0.68,
+        duration=0.6,
+        freq1=160,
+        freq2=45,
+        click_len=0.015,
+        click_freq=5000,
+        add_sub=True,
+        soft_clip=True,
+        gate_thresh=0.001,
+        body_env_fadein=0.002,
+        body_sweep_ratio=0.89,
+        click_env_fadein=0.0005,
+        click_env_fadeout_ratio=0.7,
+        click_mul_factor=0.35,
+        click_bp_q=10.0,
+        sub_freq_ratio=0.5,
+        sub_mul_factor=0.5,
+        lpf_freq=20000.0,
+        lpf_q=0.707,
+        lpf_type=1,
+        clip_min=-0.9,
+        clip_max=0.9,
+        hpf_freq=20.0,
+        hpf_q=0.707,
+        hpf_type=2,
+        **kw
+    ):
+        kw.setdefault('stereo_w', 0.0)
+        kw.setdefault('enable_reverb', False)
+        super().__init__(intensity=0.68,
+                         duration=0.6,
+                         freq1=160,
+                         freq2=45,
+                         **kw)
+
+        # click parameters
+        self.click_len = 0.015
+        self.click_freq = 5000
+
+        # behavior flags
+        self.add_sub = True
+        self.soft_clip = True
+        self.gate_thresh = 0.001
+
+        # body envelope / sweep
+        self.body_env_fadein = 0.002
+        self.body_sweep_ratio = 0.89
+
+        # click envelope
+        self.click_env_fadein = 0.0005
+        self.click_env_fadeout_ratio = 0.7
+        self.click_mul_factor = 0.35
+        self.click_bp_q = 10.0
+
+        # sub oscillator
+        self.sub_freq_ratio = 0.5
+        self.sub_mul_factor = 0.5
+
+        # soft-clip / antialias filter
+        self.lpf_freq = 20000.0
+        self.lpf_q = 0.707
+        self.lpf_type = 1
+        self.clip_min = -0.9
+        self.clip_max = 0.9
+
+        # final high-pass filter
+        self.hpf_freq = 20.0
+        self.hpf_q = 0.707
+        self.hpf_type = 2
+
+    def _make_body(self, env):
+        # exponential sweep for psycho-acoustic punch
+        glide = self._sweep(
+            self.freq1,
+            self.freq2,
+            self.duration * self.body_sweep_ratio,
+            exp=True
+        )
+        return Sine(freq=glide, mul=env)
+
+    def _make_click(self):
+        env = Fader(
+            fadein=self.click_env_fadein,
+            fadeout=self.click_len * self.click_env_fadeout_ratio,
+            dur=self.click_len,
+            mul=self.intensity * self.click_mul_factor
+        ).play()
+        noise = Noise(mul=env)
+        return ButBP(noise, freq=self.click_freq, q=self.click_bp_q)
+
+    def _make_sub(self, env):
+        sub_freq = max(self.freq2 * self.sub_freq_ratio, 20.0)
+        return Sine(freq=sub_freq, mul=env * self.sub_mul_factor)
+
+    def _build(self):
+        # body envelope
+        body_env = self._env(self.body_env_fadein)
+
+        # components
+        parts = [
+            self._make_body(body_env),
+            self._make_click()
+        ]
+        if self.add_sub:
+            parts.append(self._make_sub(body_env))
+
+        mix = sum(parts)
+
+        if self.soft_clip:
+            # antialias LPF before clipping
+            mix = Biquad(
+                mix,
+                freq=self.lpf_freq,
+                q=self.lpf_q,
+                type=self.lpf_type
+            )
+            mix = Clip(mix, min=self.clip_min, max=self.clip_max)
+
+        # gate to remove residual noise
+        gated = Gate(mix, thresh=self.gate_thresh)
+
+        # high-pass to remove subsonic rumble
+        return Biquad(
+            gated,
+            freq=self.hpf_freq,
+            q=self.hpf_q,
+            type=self.hpf_type
+        )
+
+
+# File: src/core/audio/presets/cello.py © 2025 projectemergence. All rights reserved.
+# Defines a resonant cello tone. _build() added for architecture support.
+
+from pyo import Sine, Fader, Freeverb
+from core.audio.presets.base_preset import BasePreset
+
+class Cello(BasePreset):
+    def __init__(
+        self,
+        intensity=0.5,
+        duration=1.19,
+        base_freq=216.0,
+        freq_multiplier=3.0,
+        fade_in=0.2,
+        fade_out=4.29,
+        dur_multiplier=2.08,
+        fader_mul_factor=0.95,
+        tone_mul_factor=2.0,
+        reverb_input_div=2.0,
+        reverb_size=0.76,
+        reverb_bal=0.93,
+    ):
+        super().__init__(intensity, duration)
+        # core inputs
+        self.base_freq = 20.0 * freq_multiplier
+
+        # fader settings
+        self.fade_in = 0.2
+        self.fade_out = 4.29
+        self.dur_multiplier = 2.08
+        self.fader_mul_factor = 0.95
+
+        # tone settings
+        self.tone_mul_factor = 2.0
+
+        # reverb settings
+        self.reverb_input_div = 2.0
+        self.reverb_size = 0.76
+        self.reverb_bal = 0.93
+
+    def _build(self):
+        # amplitude envelope
+        fader = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration * self.dur_multiplier,
+            mul=self.intensity * self.fader_mul_factor
+        )
+        # core sine tone
+        tone = Sine(
+            freq=self.base_freq,
+            mul=fader * self.tone_mul_factor
+        )
+        # reverb effect
+        reverb = Freeverb(
+            tone / self.reverb_input_div,
+            size=self.reverb_size,
+            bal=self.reverb_bal
+        )
+        self.chain = {"fader": fader, "tone": tone, "reverb": reverb}
+        return self.chain
+
+    def play(self):
+        chain = self._build()
+        chain["fader"].play()
+        chain["reverb"].out()
+        return chain
+
+
+# File: core/audio/presets/chorus.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+
+from pyo import Noise, Chorus
+from core.audio.presets.base_preset import BasePreset
+
+class ChorusPreset(BasePreset):
+    """A simple chorus/noise layer that can thicken the drone."""
+    def __init__(self, *, visual_metric: float = 0.0):
+        super().__init__()
+        self.depth = 1.0 + visual_metric * 0.5
+
+    def play(self):
+        return Chorus(Noise(mul=0.1),
+                      depth=self.depth,
+                      feedback=0.6,
+                      bal=0.5).out()
+    def _build(self):
+        # fade-in only once, then hold
+        env = Fader(fadein=0.1, fadeout=0.5, dur=0.0, mul=0.1).play()
+        # noise source into chorus
+        noise = Noise(mul=env)
+        return Chorus(noise, depth=self.depth, feedback=0.6, bal=0.5)
+
+
+# File: src/core/audio/presets/clarinet.py © 2025 projectemergence. All rights reserved.
+# Defines a clarinet sound with filter and distortion. _build() added for architecture support.
+
+from pyo import Sine, Fader, Disto, ButLP
+from core.audio.presets.base_preset import BasePreset
+
+class Clarinet(BasePreset):
+    def __init__(
+        self,
+        intensity=0.83,
+        duration=2.2,
+        base_freq=20.0,
+        fade_in=0.05,
+        fade_out=0.5,
+        fader_mul_factor=0.26,
+        dist_drive=0.6,
+        dist_slope=0.3,
+        dist_mul_factor=1.0,
+        filter_freq=800.0,
+    ):
+        super().__init__(intensity, duration)
+        # core
+        self.base_freq = 20.0
+        # fader settings
+        self.fade_in = 0.05
+        self.fade_out = 0.5
+        self.fader_mul_factor = 0.26
+        # distortion settings
+        self.dist_drive = 0.6
+        self.dist_slope = 0.3
+        self.dist_mul_factor = 1.0
+        # filter settings
+        self.filter_freq = 800.0
+
+    def _build(self):
+        fader = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration,
+            mul=self.intensity * self.fader_mul_factor
+        )
+        tone = Sine(
+            freq=self.base_freq,
+            mul=fader
+        )
+        distorted = Disto(
+            tone,
+            drive=self.dist_drive,
+            slope=self.dist_slope,
+            mul=self.dist_mul_factor
+        )
+        filtered = ButLP(
+            distorted,
+            freq=self.filter_freq
+        )
+        self.chain = {
+            "fader": fader,
+            "tone": tone,
+            "distorted": distorted,
+            "filtered": filtered
+        }
+        return self.chain
+
+    def play(self):
+        chain = self._build()
+        chain["fader"].play()
+        chain["filtered"].out()
+        return chain
+
+
+# File: src/core/audio/presets/digital_snap.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+"""
+DigitalSnap – hyper-tight click percussion with bit-crush and comb-style delay.
+"""
+
+from pyo import Noise, Fader, Degrade, SmoothDelay, ButHP
+from core.audio.presets.base_preset import BasePreset
+
+class DigitalSnap(BasePreset):
+    def __init__(
+        self,
+        intensity=0.8,
+        duration=1.01,
+        bit_depth=6,
+        sr_scale=0.0,
+        comb_delay=0.04,
+        comb_feedback=0.0,
+        hpf_freq=138.93,
+        fade_in=0.001,
+        fade_out=0.02,
+        crossfade=0.01,
+        **kw
+    ):
+        kw.setdefault('stereo_w', 0.0)
+        kw.setdefault('enable_reverb', False)
+        super().__init__(intensity=0.8, duration=1.01, **kw)
+
+        # bit-crusher params
+        self.bit_depth = 6
+        self.sr_scale = 0.0
+
+        # comb-style delay params (delay + feedback)
+        self.comb_delay = 0.04
+        self.comb_feedback = 0.0
+        self.crossfade = 0.01
+
+        # cleanup filter
+        self.hpf_freq = 138.93
+
+        # envelope params
+        self.fade_in = 0.001
+        self.fade_out = 0.02
+
+        # storage for the signal chain
+        self.chain = {}
+
+    def _build(self):
+        # 1) click envelope
+        env = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration,
+            mul=self.intensity
+        ).play()
+
+        # 2) white-noise click
+        noise = Noise(mul=env)
+
+        # 3) bit-crusher
+        crushed = Degrade(noise,
+                          bitdepth=self.bit_depth,
+                          srscale=self.sr_scale)
+
+        # 4) comb-style delay via SmoothDelay (delay + feedback) :contentReference[oaicite:1]{index=1}
+        combed = SmoothDelay(crushed,
+                             delay=self.comb_delay,
+                             feedback=self.comb_feedback,
+                             crossfade=0.01)
+
+        # 5) high-pass cleanup
+        cleaned = ButHP(combed, freq=self.hpf_freq)
+
+        self.chain = {
+            "env": env,
+            "crushed": crushed,
+            "combed": combed,
+            "cleaned": cleaned
+        }
+        return cleaned
+
+    def play(self):
+        out = self._build()
+        out.out()
+        return self.chain
+
+if __name__ == "__main__":
+    DigitalSnap().play()
+
+
+# File: core/audio/presets/drone.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+
+from pyo import Fader, Sine, SigTo
+from core.audio.presets.base_preset import BasePreset
+
+class DronePreset(BasePreset):
+    """Continuous drone whose level & pitch track settled_ratio & visual_metric."""
+    def __init__(self, *, settled_ratio: float = 0.0, visual_metric: float = 0.0):
+        super().__init__()  # uses default intensity/duration
+        self.settled_ratio = settled_ratio
+        self.visual_metric = visual_metric
+
+    def play(self):
+        env  = Fader(fadein=0.5, fadeout=0.1, dur=0, mul=self.settled_ratio).play()
+        freq = SigTo(value=200 + self.visual_metric * 800, time=0.1)
+        return Sine(freq=freq, mul=env * 0.3).out()
+    def _build(self):
+        # one-liner envelope × drone
+        env = Fader(fadein=0.5, fadeout=0.1, dur=0.0, mul=self.intensity).play()
+        freq = SigTo(value=200 + self.visual_metric * 800, time=0.1)
+        return Sine(freq=freq, mul=env * 0.3)
+
+# File: src/core/audio/presets/fm_bell_cluster.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+"""
+FMBellCluster – FM-based bell cluster with feedback, chorus and reverb.
+"""
+
+from pyo import FM, Chorus, Freeverb, Fader
+from core.audio.presets.base_preset import BasePreset
+
+class FMBellCluster(BasePreset):
+    def __init__(
+        self,
+        intensity=0.6,
+        duration=4.0,
+        carrier_freq=330.0,
+        mod_ratio=2.0,
+        index=5.0,
+        chorus_depth=1.2,
+        chorus_feedback=0.3,
+        reverb_size=0.8,
+        reverb_bal=0.4,
+        fade_in=0.01,
+        fade_out=1.0,
+        **kw
+    ):
+        kw.setdefault('enable_reverb', True)
+        kw.setdefault('stereo_w', 0.2)
+        super().__init__(intensity=intensity, duration=duration, **kw)
+
+        # FM params
+        self.carrier_freq = carrier_freq
+        self.mod_ratio = mod_ratio
+        self.index = index
+
+        # chorus
+        self.chorus_depth = chorus_depth
+        self.chorus_feedback = chorus_feedback
+
+        # reverb
+        self.reverb_size = reverb_size
+        self.reverb_bal = reverb_bal
+
+        # envelope
+        self.fade_in = fade_in
+        self.fade_out = fade_out
+
+    def _build(self):
+        env = Fader(fadein=self.fade_in, fadeout=self.fade_out,
+                    dur=self.duration, mul=self.intensity).play()
+        # FM carrier/modulator
+        bell = FM(carrier=self.carrier_freq,
+                  ratio=self.mod_ratio,
+                  index=self.index,
+                  mul=env)
+        # add richness
+        ch = Chorus(bell, depth=self.chorus_depth,
+                    feedback=self.chorus_feedback)
+        # space
+        rv = Freeverb(ch, size=self.reverb_size,
+                      bal=self.reverb_bal)
+        self.chain = {"env": env, "bell": bell, "chorus": ch, "reverb": rv}
+        return rv
+
+    def play(self):
+        out = self._build()
+        out.out()
+        return self.chain
+
+
+# File: core/audio/presets/general_presets.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+
+from core.audio.presets.base_preset import BasePreset
+from pyo import Fader, Sine, Noise, SigTo, Chorus, Freeverb, ButLP, IRPulse
+
+class DronePreset(BasePreset):
+    """Continuous drone whose level & pitch track settled_ratio & visual_metric."""
+    def __init__(self, *, settled_ratio: float = 0.0, visual_metric: float = 0.0):
+        super().__init__()
+        self.settled_ratio = settled_ratio
+        self.visual_metric = visual_metric
+
+    def play(self):
+        # one-liner envelope × drone
+        env = Fader(fadein=0.5, fadeout=0.1, dur=0, mul=self.settled_ratio).play()
+        freq = SigTo(value=200 + self.visual_metric * 800, time=0.1)
+        return Sine(freq=freq, mul=env*0.3).out()
+
+class ChorusPreset(BasePreset):
+    """A simple chorus/noise layer that can thicken the drone."""
+    def __init__(self, *, visual_metric: float = 0.0):
+        super().__init__()
+        self.depth = 1.0 + visual_metric * 0.5
+
+    def play(self):
+        return Chorus(Noise(mul=0.1), depth=self.depth, feedback=0.6, bal=0.5).out()
+
+class SquareFallPreset(BasePreset):
+    """Burst of harmonics into a comb filter (square-fall)."""
+    def __init__(self, *, intensity: float = 0.5, freq: float = 200, harmonics: int = 6):
+        super().__init__()
+        self.intensity, self.freq, self.harmonics = intensity, freq, harmonics
+
+    def play(self):
+        env   = Fader(fadein=0.01, fadeout=0.25, dur=0.25, mul=self.intensity).play()
+        burst = sum(Sine(freq=self.freq*(i+1), mul=env/(i+1)) for i in range(self.harmonics))
+        IRPulse(input=burst, order=2048).out()
+        return burst
+
+class MetallicRainPreset(BasePreset):
+    """Quick metallic drop using band-pass and two oscillators."""
+    def __init__(self, *, intensity: float = 0.7, base_freq: float = 600,
+                 visual_metric: float = 0.5, fall_speed: float = 1.0):
+        super().__init__()
+        self.intensity, self.visual_metric = intensity, visual_metric
+        self.base_freq = base_freq + visual_metric * 200
+        self.fall_speed = fall_speed
+
+    def play(self):
+        dur = max(0.1, 0.5 - self.fall_speed * 0.1)
+        env = Fader(fadein=dur/5, fadeout=dur*0.8, dur=dur, mul=self.intensity).play()
+        mod = Sine(freq=5, mul=self.base_freq * 0.02 * self.visual_metric, add=self.base_freq)
+        osc1 = Sine(freq=mod, mul=env).out()
+        osc2 = Sine(freq=self.base_freq * 1.5, mul=env*0.5).out()
+        ButLP(osc1+osc2, freq=self.base_freq).out()
+        return osc1
+
+
+# File: src/core/audio/presets/guitar.py © 2025 projectemergence. All rights reserved.
+# Simulates a plucked sine loop guitar. _build() added for architecture support.
+
+from pyo import SineLoop, Fader, Chorus
+from core.audio.presets.base_preset import BasePreset
+
+class Guitar(BasePreset):
+    def __init__(
+        self,
+        intensity=1.0,
+        duration=0.18,
+        base_freq=220.0,
+        fade_in=0.01,
+        fade_out=0.36,
+        fader_mul_factor=0.57,
+        loop_feedback=0.07,
+        chorus_depth=0.44,
+        chorus_feedback=0.14,
+        chorus_bal=0.14,
+    ):
+        super().__init__(intensity, duration)
+        # core
+        self.base_freq = 220.0
+        # fader settings
+        self.fade_in = 0.01
+        self.fade_out = 0.36
+        self.fader_mul_factor = 0.57
+        # sine-loop settings
+        self.loop_feedback = 0.07
+        # chorus settings
+        self.chorus_depth = 0.44
+        self.chorus_feedback = 0.14
+        self.chorus_bal = 0.14
+
+    def _build(self):
+        fader = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration,
+            mul=self.intensity * self.fader_mul_factor
+        )
+        tone = SineLoop(
+            freq=self.base_freq,
+            feedback=self.loop_feedback,
+            mul=fader
+        )
+        chorus = Chorus(
+            tone,
+            depth=self.chorus_depth,
+            feedback=self.chorus_feedback,
+            bal=self.chorus_bal
+        )
+        self.chain = {"fader": fader, "tone": tone, "chorus": chorus}
+        return self.chain
+
+    def play(self):
+        chain = self._build()
+        chain["fader"].play()
+        chain["chorus"].out()
+        return chain
+
+
+# File: src/core/audio/presets/harmonic_swarm.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+"""
+HarmonicSwarm – multiple detuned partials with dynamic panning and delay feedback.
+"""
+
+from random import uniform
+from pyo import Sine, Fader, Delay, Pan, Sine as LFO
+from core.audio.presets.base_preset import BasePreset
+
+class HarmonicSwarm(BasePreset):
+    def __init__(
+        self,
+        intensity=0.5,
+        duration=0,   
+        base_freq=110.0,
+        num_voices=6,
+        freq_ratio=1.01,
+        pan_rate=0.05,
+        pan_depth=1.0,
+        delay_times=(0.1,0.2,0.3),
+        delay_feedback=0.3,
+        delay_mul=0.4,
+        fade_in=2.0,
+        fade_out=2.0,
+        **kw
+    ):
+        kw.setdefault('enable_reverb', True)
+        kw.setdefault('stereo_w', 0.3)
+        super().__init__(intensity=intensity, duration=duration, **kw)
+
+        # core
+        self.base_freq = base_freq
+        self.num_voices = num_voices
+        self.freq_ratio = freq_ratio
+
+        # panning LFO
+        self.pan_rate = pan_rate
+        self.pan_depth = pan_depth
+
+        # delay
+        self.delay_times = delay_times
+        self.delay_feedback = delay_feedback
+        self.delay_mul = delay_mul
+
+        # envelope
+        self.fade_in = fade_in
+        self.fade_out = fade_out
+
+    def _build(self):
+        # long fade for smooth crossfade
+        gate = Fader(fadein=self.fade_in, fadeout=self.fade_out,
+                     dur=self.duration, mul=self.intensity).play()
+
+        # create voices
+        voices = []
+        for i in range(self.num_voices):
+            detune = self.base_freq * (self.freq_ratio**i)
+            osc = Sine(freq=detune, mul=gate/self.num_voices)
+            pan_lfo = LFO(freq=self.pan_rate + uniform(-0.01,0.01),
+                          mul=self.pan_depth/2, add=0.5)
+            voices.append(Pan(osc, pan=pan_lfo))
+
+        mix = sum(voices)
+        # build one Delay per tap time and sum them
+        delays = []
+        for dt in self.delay_times:
+            delays.append(Delay(mix,
+                                delay=dt,
+                                feedback=self.delay_feedback,
+                                mul=self.delay_mul))
+        delayed = sum(delays)
+        self.chain = {"gate": gate, "voices": voices, "delayed": delayed}
+        return delayed
+
+    def play(self):
+        out = self._build()
+        out.out()
+        return self.chain
+
+
+# File: src/core/audio/presets/hi_hat.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+"""
+File: audio/presets/hi_hat.py
+© 2025 projectemergence. All rights reserved.
+
+Defines the Hi-Hat preset.
+Simulates a hi-hat using filtered noise with a short burst envelope.
+Adoptez une vision tournée vers l’avenir!
+"""
+
+from pyo import Noise, Fader, ButHP
+from core.audio.presets.base_preset import BasePreset
+
+class HiHat(BasePreset):
+    def __init__(
+        self,
+        intensity=0.76,
+        duration=1.85,
+        cutoff=5654.76,
+        fade_in=0.005,
+        fade_out=0.21,
+        fader_mul_factor=0.0,
+        **kw
+    ):
+        kw.setdefault('stereo_w', 0.0)
+        kw.setdefault('enable_reverb', False)
+        super().__init__(intensity=0.76, duration=1.85, **kw)
+        # filter cutoff
+        self.cutoff = 5654.76
+        # envelope settings
+        self.fade_in = 0.005
+        self.fade_out = 0.21
+        self.fader_mul_factor = 0.0
+
+    def _build(self):
+        # short burst envelope
+        fader = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration,
+            mul=self.intensity * self.fader_mul_factor
+        )
+        noise = Noise(mul=fader)
+        hi_hat = ButHP(noise, freq=self.cutoff)
+        self.chain = {"fader": fader, "noise": noise, "hi_hat": hi_hat}
+        return self.chain
+
+    def play(self):
+        chain = self._build()
+        chain["fader"].play()
+        chain["hi_hat"].out()
+        return chain
+
+if __name__ == "__main__":
+    HiHat().play()
+
+
+# File: src/core/audio/presets/laser.py © 2025 projectemergence. All rights reserved.
+# Futuristic laser sound with FM. _build() added for architecture support.
+
+from pyo import Sine, Fader
+from core.audio.presets.base_preset import BasePreset
+
+class Laser(BasePreset):
+    def __init__(
+        self,
+        intensity=0.9,
+        duration=0.3,
+        base_freq=800.0,
+        mod_depth=50.0,
+        mod_rate=20.0,
+        fade_in=0.005,
+        fade_out=0.2,
+        fader_mul_factor=1.0,
+    ):
+        super().__init__(intensity, duration)
+        # core
+        self.base_freq = base_freq
+        self.mod_depth = mod_depth
+        self.mod_rate = mod_rate
+        # envelope settings
+        self.fade_in = fade_in
+        self.fade_out = fade_out
+        self.fader_mul_factor = fader_mul_factor
+
+    def _build(self):
+        # amplitude envelope
+        fader = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration,
+            mul=self.intensity * self.fader_mul_factor
+        )
+        # modulator oscillator
+        mod = Sine(freq=self.mod_rate, mul=self.mod_depth)
+        # frequency-modulated carrier
+        modulated_freq = self.base_freq + mod
+        laser = Sine(freq=modulated_freq, mul=fader)
+        self.chain = {"fader": fader, "mod": mod, "laser": laser}
+        return self.chain
+
+    def play(self):
+        chain = self._build()
+        chain["fader"].play()
+        chain["laser"].out()
+        return chain
+
+
+# File: audio/presets/metallic_rain.py © 2025 projectemergence. All rights reserved.
+# © 2025 projectemergence
+#!/usr/bin/env python3
+"""
+MetallicRain – spectral drizzle with stereo drift and tail.
+(Fixed kw duplication 2025-04-23.)
+"""
+
+import random, time, threading
+from pyo import Noise, ButBP, Sine, Fader, Mix
+from core.audio.presets.base_preset import BasePreset
+
+class MetallicRain(BasePreset):
+    def __init__(
+        self,
+        intensity=0.4,
+        duration=6.0,
+        grain_rate=7,
+        base_freq=432.0,
+        width=0.9,
+        fade_env=0.2,
+        hiss_mul_factor=0.1,
+        hiss_freq_ratio=1.2,
+        hiss_q=0.2,
+        sweep_start_ratio=1.8,
+        sweep_end_ratio=0.4,
+        sweep_dur=0.4,
+        drop_rand_min=0.1,
+        drop_rand_max=2.4,
+        amp_rand_min=0.3,
+        amp_rand_max=0.7,
+        rate_rand_min=0.1,
+        rate_rand_max=2.0,
+        grain_bp_ratio=1.1,
+        grain_bp_q=8.0,
+        mix_voices=2,
+        **kw
+    ):
+        kw.setdefault('stereo_w', width)
+        kw.setdefault('enable_reverb', True)
+        super().__init__(intensity=intensity, duration=duration, **kw)
+
+        # core parameters
+        self.grain_rate = grain_rate
+        self.base_freq = base_freq
+
+        # envelope / hiss
+        self.fade_env = fade_env
+        self.hiss_mul_factor = hiss_mul_factor
+        self.hiss_freq_ratio = hiss_freq_ratio
+        self.hiss_q = hiss_q
+
+        # sweep (body) parameters
+        self.sweep_start_ratio = sweep_start_ratio
+        self.sweep_end_ratio = sweep_end_ratio
+        self.sweep_dur = sweep_dur
+
+        # randomization ranges
+        self.drop_rand_min = drop_rand_min
+        self.drop_rand_max = drop_rand_max
+        self.amp_rand_min = amp_rand_min
+        self.amp_rand_max = amp_rand_max
+        self.rate_rand_min = rate_rand_min
+        self.rate_rand_max = rate_rand_max
+
+        # grain filter
+        self.grain_bp_ratio = grain_bp_ratio
+        self.grain_bp_q = grain_bp_q
+
+        # final mix
+        self.mix_voices = mix_voices
+
+    def _grain(self, freq, dur, amp):
+        """Create one grain: band-passed sine burst, auto-out."""
+        grain = ButBP(
+            Sine(freq=freq),
+            freq=freq * self.grain_bp_ratio,
+            q=self.grain_bp_q,
+            mul=amp
+        )
+        grain.out()
+        return grain
+
+    def _build(self):
+        # create shared envelope for hiss and grains
+        fade = self._env(self.fade_env)
+
+        # hiss floor
+        hiss = ButBP(
+            Noise(mul=fade * self.hiss_mul_factor),
+            freq=self.base_freq * self.hiss_freq_ratio,
+            q=self.hiss_q
+        )
+
+        # spawn grains in background
+        def rain_loop():
+            end_t = time.time() + (self.duration or 1e9)
+            while time.time() < end_t:
+                drop = self.base_freq * random.uniform(self.drop_rand_min, self.drop_rand_max)
+                glide = self._sweep(
+                    drop * self.sweep_start_ratio,
+                    drop * self.sweep_end_ratio,
+                    self.sweep_dur
+                )
+                dur = random.uniform(self.sweep_dur * 0.25, self.sweep_dur * 0.875)
+                amp = fade * random.uniform(self.amp_rand_min, self.amp_rand_max)
+                self._keep(self._grain(glide, dur, amp))
+                time.sleep(1 / (self.grain_rate * random.uniform(self.rate_rand_min, self.rate_rand_max)))
+
+        threading.Thread(target=rain_loop, daemon=True).start()
+
+        # mix to stereo
+        mix = Mix([hiss], voices=self.mix_voices)
+        self.chain = {"fade": fade, "hiss": hiss, "mix": mix}
+        return mix
+
+    def play(self):
+        mix = self._build()
+        mix.out()
+        return self.chain
+
+if __name__ == "__main__":
+    MetallicRain().play()
+
+
+#File:  audio/presets/piano.py © 2025 projectemergence. All rights reserved.
+# File: src/core/audio/presets/piano.py © 2025 projectemergence
+
+from pyo import Sine, Fader
+from core.audio.presets.base_preset import BasePreset
+
+class Piano(BasePreset):
+    def __init__(
+        self,
+        notes,
+        durations,
+        intensity=0.8,
+        fade_in=0.01,
+        fade_out=0.15,
+        fader_mul_factor=1.0,
+    ):
+        super().__init__(intensity, duration=None)
+        self.notes = notes
+        self.durations = durations
+        self.fade_in = fade_in
+        self.fade_out = fade_out
+        self.fader_mul_factor = fader_mul_factor
+
+    def _build(self):
+        seq = []
+        for note, dur in zip(self.notes, self.durations):
+            f = Fader(fadein=self.fade_in,
+                      fadeout=self.fade_out,
+                      dur=dur,
+                      mul=self.intensity * self.fader_mul_factor)
+            s = Sine(freq=note, mul=f)
+            seq.append((f, s))
+        return seq
+
+
+#File:  audio/presets/preset_loading_animation.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+"""
+File: audio/presets/preset_loading_animation.py
+© 2025 projectemergence. All rights reserved.
+
+This module provides enhanced audio effects synchronized with the loading animation visuals.
+All audio creation for loading animations is centralized here.
+Adoptez une vision tournée vers l’avenir!
+"""
+
+from pyo import Server, Sine, Fader, Noise, SigTo, Chorus, Freeverb, ButLP, ButBP, IRPulse
+import time, threading, random, math
+
+def create_loading_animation_audio(clt=None):
+    # Create (or reuse) the pyo Server and keep a reference to it.
+    server = clt._srv
+    server.start()
+    audio = {'server': server}  # <-- Save the server in the state.
+
+    # Drone Effect – using oneliners where possible.
+    audio['drone_fader'] = Fader(fadein=2.0, fadeout=2.0, dur=2, mul=0.0).play()
+    audio['drone_freq']  = SigTo(value=1000, time=0.5, init=100)
+    audio['drone_amp']   = SigTo(value=0.2, time=0.5, init=0.4)
+    drone = Sine(freq=audio['drone_freq'], mul=audio['drone_amp'] * audio['drone_fader'])
+    audio['drone'] = drone
+    audio['drone_filtered'] = ButLP(drone, audio['drone_freq']).out()
+
+    # Chorus Effect.
+    audio['chorus_fader'] = Fader(fadein=0.1, fadeout=1.0, dur=10, mul=0.0).play()
+    audio['chorus_noise'] = Noise(mul=audio['chorus_fader'])
+    audio['chorus'] = Chorus(audio['chorus_noise'], depth=1.0, feedback=0.6, bal=0.5).out()
+    
+    return audio
+
+def update_drone(audio, settled_ratio, visual_metric=0.0):
+    audio['drone_freq'].value = 100 + settled_ratio * 600  # one-liner computation
+    audio['drone_amp'].value  = 0.2 + settled_ratio * 0.3
+    audio['drone_filtered'].freq = 250 + math.sqrt(visual_metric) * 500
+
+def update_chorus(audio, folding_factor, visual_metric=0.0):
+    audio['chorus_fader'].mul = folding_factor * 0.4
+    audio['chorus'].depth = 1.0 + visual_metric * 0.5
+
+_comb_resonator = None
+def _get_comb_resonator():
+    global _comb_resonator
+    if _comb_resonator is None:
+        # order=2048 sets the impulse-response length; drop unsupported 'size' & 'feedback'
+        _comb_resonator = IRPulse(input=Noise(mul=0), order=2048).out()
+    return _comb_resonator
+
+def play_square_fall(audio, intensity=0.5, freq=200, harmonics=6):
+    """
+    Overhauled square-fall:
+      • Additive burst of ‘harmonics’ partials (superposition in one-liner).
+      • Shared IRPulse comb filter for resonant ringing.
+    """
+    # 1-liner additive burst envelope
+    env = Fader(fadein=0.01, fadeout=0.25, dur=0.25, mul=intensity).play()
+    burst = sum(Sine(freq=freq*(i+1), mul=env/(i+1)) for i in range(harmonics))
+    # feed burst into shared comb resonator input
+    comb = _get_comb_resonator()
+    comb.setInput(burst)
+    return burst
+
+def play_final_flash(intensity=0.7, freq=4000):
+    flash_fader = Fader(fadein=0.01, fadeout=0.8, dur=0.15, mul=intensity).play()
+    flash_noise = Noise(mul=flash_fader)
+    flash_effect = ButLP(flash_noise, freq).out()
+    threading.Thread(target=lambda: (time.sleep(0.15), flash_effect.stop()), daemon=True).start()
+    return flash_effect
+
+def play_final_flash_chords(intensity=0.7, total_duration=4.0):
+    chord1 = [59, 73, 98]   # E minor-like chord.
+    chord2 = [49, 65, 78]   # Dark chord.
+    chord_duration = 0.5  
+    num_chords = int(total_duration / chord_duration)
+
+    def play_chord(chord):
+        env = Fader(fadein=chord_duration/100, fadeout=chord_duration*0.5, dur=chord_duration, mul=intensity).play()
+        oscillators = []
+        for note in chord:
+            freq = 440.0 * (2 ** ((note - 69) / 12.0))
+            osc = Sine(freq=freq, mul=intensity)
+            osc_filtered = ButLP(osc, freq=2*freq)
+            osc_filtered.out()
+            oscillators.append(osc_filtered)
+        mix = sum(oscillators)
+        rev = Freeverb(mix, size=0.1, bal=0.3).out()
+        time.sleep(chord_duration)
+        for osc in oscillators: osc.stop()
+        rev.stop()
+
+    def chord_sequence():
+        for i in range(num_chords):
+            play_chord(chord1 if i % 2 == 0 else chord2)
+        print("Final flash gothic chords sequence completed.")
+
+    threading.Thread(target=chord_sequence, daemon=True).start()
+
+def play_dark_master_solo(intensity=0.8, total_duration=20.0):
+    chords = [
+        [59, 73, 98], [49, 65, 78], [55, 70, 90],
+        [52, 67, 83], [60, 72, 84], [57, 69, 87]
+    ]
+    chord_duration = 0.75
+    num_chords = int(total_duration / chord_duration)
+    melody_notes = [72, 74, 75, 77, 79, 80, 82]
+
+    def play_chord(chord):
+        env = Fader(fadein=chord_duration/100, fadeout=chord_duration*0.6, dur=chord_duration, mul=intensity).play()
+        oscillators = [ButLP(Sine(freq=440.0 * (2 ** ((note - 69) / 12.0)) * random.uniform(0.98, 1.02),
+                          mul=env/len(chord)), freq=2 * 440.0 * (2 ** ((note - 69) / 12.0)))
+                        for note in chord]
+        mix = sum(oscillators)
+        rev = Freeverb(mix, size=0.05, bal=0.35).out()
+        time.sleep(chord_duration)
+        for osc in oscillators: osc.stop()
+        rev.stop()
+
+    def play_melody():
+        end_time = time.time() + total_duration
+        while time.time() < end_time:
+            note = random.choice(melody_notes)
+            dur = random.choice([0.125, 0.25, 0.5])
+            env = Fader(fadein=dur/50, fadeout=dur*0.7, dur=dur, mul=intensity * 0.8).play()
+            osc = Sine(freq=440.0 * (2 ** ((note - 69) / 12.0)) * random.uniform(0.99, 1.01), mul=env).out()
+            time.sleep(dur * 0.9)
+            osc.stop()
+
+    threading.Thread(target=lambda: [play_chord(chords[i % len(chords)]) for i in range(num_chords)], daemon=True).start()
+    threading.Thread(target=play_melody, daemon=True).start()
+    print("Dark master solo performance started (non-blocking).")
+
+def play_metallic_rain_instrument(intensity=0.7, base_freq=600, visual_metric=0.5, fall_speed=1.0):
+    duration = max(0.1, 0.5 - fall_speed * 0.1)
+    env = Fader(fadein=duration/5, fadeout=duration*0.8, dur=duration, mul=intensity).play()
+    mod = Sine(freq=5, mul=base_freq * 0.02 * visual_metric, add=base_freq)
+    osc1 = Sine(freq=mod, mul=env)
+    osc2 = Sine(freq=base_freq * 1.5 * random.uniform(0.98, 1.02), mul=env*0.5)
+    mix = osc1 + osc2
+    ring_effect = ButBP(mix, freq=base_freq, q=8).out()
+    threading.Thread(target=lambda: (time.sleep(duration + 0.05), ring_effect.stop()), daemon=True).start()
+    return ring_effect
+
+def stop_effects(audio, fade_time=10):
+    fade_drone = Fader(fadein=0.2, fadeout=fade_time/2, dur=fade_time, mul=0.5).play()
+    audio['drone_fader'].mul *= fade_drone
+    fade_chorus = Fader(fadein=0.5, fadeout=fade_time*2, dur=fade_time, mul=1).play()
+    audio['chorus_fader'].mul *= fade_chorus
+    def stop_all():
+        time.sleep(fade_time)
+        audio['drone'].stop(), audio['chorus_noise'].stop(), audio['chorus'].stop()
+        print("Enhanced loading animation audio effects stopped with fade out.")
+    threading.Thread(target=stop_all, daemon=True).start()
+
+
+# File: src/core/audio/presets/reverse_impact.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+"""
+ReverseImpact – swells that reverse-decay into impacts.
+"""
+
+from pyo import Noise, Fader, NewTable, TableRec, TableRead, ButBP, Disto
+from core.audio.presets.base_preset import BasePreset
+
+class ReverseImpact(BasePreset):
+    def __init__(
+        self,
+        intensity=0.43,
+        duration=4.23,
+        env_dur=2.2,
+        bp_freq=800.0,
+        bp_q=5.0,
+        dist_drive=0.65,
+        dist_slope=0.39,
+        fade_in=0.07,
+        fade_out=0.41,
+        **kw
+    ):
+        super().__init__(intensity=0.43, duration=4.23, **kw)
+
+        # envelope recording length
+        self.env_dur = 2.2
+        self.fade_in = 0.07
+        self.fade_out = 0.41
+
+        # bandpass
+        self.bp_freq = 800.0
+        self.bp_q = 5.0
+
+        # distortion
+        self.dist_drive = 0.65
+        self.dist_slope = 0.39
+
+    def _build(self):
+        # create reversed envelope table
+        tbl = NewTable(length=self.env_dur)
+        env = Fader(fadein=self.env_dur, fadeout=0,
+                    dur=self.env_dur, mul=self.intensity).play()
+        # record noise burst
+        rec = TableRec(Noise(mul=env), table=tbl).play()
+
+        # read it *backwards*
+        reader = TableRead(
+            table=tbl,
+            freq=-tbl.getRate(),   # negative to reverse
+            init=1.0,              # start at the end (normalized)
+            loop=False,
+            mul=1.0
+        )
+
+        # then the rest of your chain
+        filtered  = ButBP(reader, freq=self.bp_freq, q=self.bp_q)
+        distorted = Disto(filtered,
+                          drive=self.dist_drive,
+                          slope=self.dist_slope,
+                          mul=1.0)
+
+        self.chain = {
+            "env": env,
+            "rec": rec,
+            "reader": reader,
+            "filtered": filtered,
+            "distorted": distorted
+        }
+        return distorted
+
+
+    def play(self):
+        out = self._build()
+        out.out()
+        return self.chain
+
+
+# File: src/core/audio/presets/snare.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+"""
+File: audio/presets/snare.py
+© 2025 projectemergence. All rights reserved.
+
+Defines the Snare preset.
+Simulates a snare drum using a short burst of noise filtered with a narrow bandpass.
+Adoptez une vision tournée vers l’avenir!
+"""
+
+from pyo import Noise, Fader, ButBP
+from core.audio.presets.base_preset import BasePreset
+
+class Snare(BasePreset):
+    def __init__(
+        self,
+        intensity=0.9,
+        duration=0.3,
+        center_freq=1800.0,
+        fade_in=0.005,
+        fade_out=0.2,
+        fader_mul_factor=1.0,
+        **kw
+    ):
+        # ensure stereo and reverb defaults
+        kw.setdefault('stereo_w', 0.0)
+        kw.setdefault('enable_reverb', False)
+        super().__init__(intensity=intensity, duration=duration, **kw)
+
+        # filter center frequency
+        self.center_freq = center_freq
+
+        # envelope settings
+        self.fade_in = fade_in
+        self.fade_out = fade_out
+        self.fader_mul_factor = fader_mul_factor
+
+        # storage for built objects
+        self.chain = {}
+
+    def _build(self):
+        # create the burst envelope
+        fader = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration,
+            mul=self.intensity * self.fader_mul_factor
+        )
+        # noise source
+        noise = Noise(mul=fader)
+        # band-pass filter for snare character
+        snare = ButBP(noise, freq=self.center_freq)
+
+        self.chain = {"fader": fader, "noise": noise, "snare": snare}
+        return snare
+
+    def play(self):
+        snare = self._build()
+        # start envelope and output
+        self.chain["fader"].play()
+        snare.out()
+        return self.chain
+
+if __name__ == "__main__":
+    Snare().play()
+
+
+# File: core/audio/presets/square_fall.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+
+from pyo import Fader, Sine, IRPulse
+from core.audio.presets.base_preset import BasePreset
+
+class SquareFallPreset(BasePreset):
+    """Burst of harmonics into a comb filter (square-fall)."""
+    def __init__(self, *, intensity: float = 0.5, freq: float = 200, harmonics: int = 6):
+        super().__init__()
+        self.intensity = intensity
+        self.freq      = freq
+        self.harmonics = harmonics
+
+    def play(self):
+        env   = Fader(fadein=0.01, fadeout=0.25, dur=0.25, mul=self.intensity).play()
+        burst = sum(Sine(freq=self.freq * (i+1), mul=env / (i+1))
+                    for i in range(self.harmonics))
+        IRPulse(input=burst, order=2048).out()
+        return burst
+    def _build(self):
+        # envelope & additive burst
+        env = Fader(fadein=0.01, fadeout=0.25, dur=0.25, mul=self.intensity).play()
+        burst = sum(
+            Sine(freq=self.freq * (i + 1), mul=env / (i + 1))
+            for i in range(self.harmonics)
+        )
+        IRPulse(input=burst, order=2048).out()
+        return burst
+
+# File: src/core/audio/presets/trumpet.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+"""
+File: audio/presets/trumpet.py
+© 2025 projectemergence. All rights reserved.
+
+Defines the Trumpet preset.
+Emulates a bright brass sound with a characteristically brassy vibrato and warm filtering.
+Adoptez une vision tournée vers l’avenir!
+"""
+
+from pyo import Sine, Fader, Chorus, ButLP, SigTo
+from core.audio.presets.base_preset import BasePreset
+
+class Trumpet(BasePreset):
+    def __init__(
+        self,
+        intensity=0.8,
+        duration=1.5,
+        base_freq=440.0,
+        vibrato_rate=6.0,
+        vibrato_depth=10.0,
+        fade_in=0.05,
+        fade_out=0.7,
+        fader_mul_factor=1.0,
+        sigto_time_factor=1.0,
+        lp_freq=1000.0,
+        chorus_depth=1.0,
+        chorus_feedback=0.25,
+        chorus_bal=0.5,
+        **kw
+    ):
+        kw.setdefault('stereo_w', 0.0)
+        kw.setdefault('enable_reverb', False)
+        super().__init__(intensity=intensity, duration=duration, **kw)
+
+        # core tone parameters
+        self.base_freq = base_freq
+        self.vibrato_rate = vibrato_rate
+        self.vibrato_depth = vibrato_depth
+
+        # envelope settings
+        self.fade_in = fade_in
+        self.fade_out = fade_out
+        self.fader_mul_factor = fader_mul_factor
+
+        # SigTo (smooth freq) timing
+        self.sigto_time_factor = sigto_time_factor
+
+        # filtering
+        self.lp_freq = lp_freq
+
+        # chorus effect
+        self.chorus_depth = chorus_depth
+        self.chorus_feedback = chorus_feedback
+        self.chorus_bal = chorus_bal
+
+    def _build(self):
+        # amplitude envelope
+        fader = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration,
+            mul=self.intensity * self.fader_mul_factor
+        )
+        # smooth base frequency holder
+        freq_mod = SigTo(
+            value=self.base_freq,
+            time=self.duration * self.sigto_time_factor
+        )
+        # vibrato oscillator
+        vibrato = Sine(freq=self.vibrato_rate, mul=self.vibrato_depth)
+        # combine base freq and vibrato
+        modulated_freq = freq_mod + vibrato
+        # carrier tone
+        tone = Sine(freq=modulated_freq, mul=fader)
+        # warm low-pass filter
+        filtered = ButLP(tone, freq=self.lp_freq)
+        # richness via chorus
+        chorus = Chorus(
+            filtered,
+            depth=self.chorus_depth,
+            feedback=self.chorus_feedback,
+            bal=self.chorus_bal
+        )
+
+        self.chain = {
+            "fader": fader,
+            "freq_mod": freq_mod,
+            "vibrato": vibrato,
+            "tone": tone,
+            "filtered": filtered,
+            "chorus": chorus
+        }
+        return chorus
+
+    def play(self):
+        out = self._build()
+        self.chain["fader"].play()
+        out.out()
+        return self.chain
+
+if __name__ == "__main__":
+    Trumpet().play()
+
+
+# File: src/core/audio/presets/two_freq_drones.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+# © 2025 projectemergence
+
+"""
+TwoFreqDrones – subtle, continuously-evolving dual-sine drone.
+• Always-on; no need to reschedule-loop.
+• Slow random drift on both oscillators via band-limited LFO.
+• Dual Faders give click-free start/stop and enable cross-fade
+  when the engine really has to restart the preset.
+"""
+
+from random import random
+from pyo import Sine, Fader, Sine as LFO
+from core.audio.presets.base_preset import BasePreset   # unchanged
+
+class TwoFreqDrones(BasePreset):
+    def __init__(
+        self,
+        base_freq=65.4,
+        ratio=4/3,
+        drift_speed=0.04,
+        intensity=0.5,
+        fade=2.0,
+        drift_mul_ratio=0.015,
+        osc_amp_factor=0.5,
+        mix_voices=2,
+        **kw
+    ):
+        kw.setdefault('enable_reverb', True)
+        kw.setdefault('stereo_w', 0.3)
+        # duration=0 => infinite
+        super().__init__(intensity=intensity, duration=0, **kw)
+
+        # core parameters
+        self.base_freq = base_freq
+        self.ratio = ratio
+
+        # drift LFO
+        self.drift_speed = drift_speed
+        self.drift_mul_ratio = drift_mul_ratio
+
+        # cross-fade gate
+        self.fade = fade
+
+        # oscillator amplitude relative to gate
+        self.osc_amp_factor = osc_amp_factor
+
+        # mixing
+        self.mix_voices = mix_voices
+
+    def _drifting_osc(self, freq, amp):
+        """Band-limited LFO to drift the oscillator frequency ±drift_mul_ratio."""
+        drift = LFO(
+            freq=self.drift_speed,
+            phase=random(),
+            mul=freq * self.drift_mul_ratio,
+            add=freq
+        )
+        return Sine(freq=drift, mul=amp)
+
+    def _build(self):
+        # gate fader for crossfade
+        gate = Fader(
+            fadein=self.fade,
+            fadeout=self.fade,
+            dur=self.duration,
+            mul=self.intensity
+        ).play()
+
+        # two drifting oscillators
+        osc_a = self._drifting_osc(self.base_freq, gate * self.osc_amp_factor)
+        osc_b = self._drifting_osc(self.base_freq * self.ratio, gate * self.osc_amp_factor)
+
+        # mix to stereo voices
+        mix = (osc_a + osc_b).mix(self.mix_voices)
+
+        # store chain
+        self.chain = {"gate": gate, "osc_a": osc_a, "osc_b": osc_b, "mix": mix}
+        return mix
+
+    def play(self):
+        out = self._build()
+        out.out()
+        return self.chain
+
+if __name__ == "__main__":
+    TwoFreqDrones().play()
+
+# File: src/core/audio/presets/violin.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+"""
+File: audio/presets/violin.py
+© 2025 projectemergence. All rights reserved.
+
+Defines the Violin preset.
+Simulates a bowed string instrument using a sine oscillator with vibrato.
+Adoptez une vision tournée vers l’avenir!
+"""
+
+from pyo import Sine, Fader
+from core.audio.presets.base_preset import BasePreset
+
+class Violin(BasePreset):
+    def __init__(
+        self,
+        intensity=0.5,
+        duration=3.0,
+        base_freq=4063.57,
+        vibrato_rate=5.0,
+        vibrato_depth=5.0,
+        fade_in=0.1,
+        fade_out=0.5,
+        fader_mul_factor=0.46,
+    ):
+        super().__init__(intensity, duration)
+        # core tone params
+        self.base_freq = 4063.57
+        self.vibrato_rate = 5.0
+        self.vibrato_depth = 5.0
+        # envelope params
+        self.fade_in = 0.1
+        self.fade_out = 0.5
+        self.fader_mul_factor = 0.46
+        # storage for chain
+        self.chain = {}
+
+    def _build(self):
+        # amplitude envelope
+        fader = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration,
+            mul=self.intensity * self.fader_mul_factor
+        )
+        # vibrato LFO
+        vibrato = Sine(freq=self.vibrato_rate, mul=self.vibrato_depth)
+        # modulated carrier
+        modulated_freq = self.base_freq + vibrato
+        tone = Sine(freq=modulated_freq, mul=fader)
+        self.chain = {"fader": fader, "vibrato": vibrato, "tone": tone}
+        return self.chain
+
+    def play(self):
+        chain = self._build()
+        chain["fader"].play()
+        chain["tone"].out()
+        return chain
+
+if __name__ == "__main__":
+    Violin().play()
+
+# File: src/core/audio/presets/whale_calls.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+"""
+File: audio/presets/whale_calls.py
+© 2025 projectemergence. All rights reserved.
+
+Defines the WhaleCalls preset class.
+Provides a low–frequency whale call preset.
+
+Adoptez une vision tournée vers l’avenir!
+"""
+
+from pyo import Sine, Fader
+from core.audio.presets.base_preset import BasePreset
+
+class WhaleCalls(BasePreset):
+    def __init__(
+        self,
+        intensity=0.4,
+        duration=4.0,
+        freq=110.0,
+        fade_in=1.0,
+        fade_out=1.0,
+        fader_mul_factor=1.0,
+        **kw
+    ):
+        kw.setdefault('stereo_w', 0.0)
+        kw.setdefault('enable_reverb', False)
+        super().__init__(intensity=intensity, duration=duration, **kw)
+        # core frequency
+        self.freq = freq
+        # envelope settings
+        self.fade_in = fade_in
+        self.fade_out = fade_out
+        self.fader_mul_factor = fader_mul_factor
+        # storage for chain
+        self.chain = {}
+
+    def _build(self):
+        # amplitude envelope
+        fader = Fader(
+            fadein=self.fade_in,
+            fadeout=self.fade_out,
+            dur=self.duration,
+            mul=self.intensity * self.fader_mul_factor
+        )
+        # carrier sine for whale call
+        sine = Sine(freq=self.freq, mul=fader)
+        self.chain = {"fader": fader, "sine": sine}
+        return sine
+
+    def play(self):
+        sine = self._build()
+        self.chain["fader"].play()
+        sine.out()
+        return self.chain
+
+if __name__ == "__main__":
+    WhaleCalls().play()
+
+
+# File: src/core/audio/presets/wood_kick.py © 2025 projectemergence. All rights reserved.
+#!/usr/bin/env python3
+# © 2025 projectemergence. All rights reserved.
+
+"""
+WoodKick – a clean, wooden-character kick with minimal noise.
+Technique enhancements:
+ • body: sine sweep (45→400 Hz) with high-pass DC removal
+ • click: band-limited noise burst with high-pass cleanup
+ • separate multi-stage envelopes for tight attack & body
+ • gentle tanh saturation with pre-filter antialiasing
+"""
+
+from pyo import Sine, Noise, ButBP, ButHP, Biquad, Fader, SigTo, Tanh
+from core.audio.presets.base_preset import BasePreset
+
+class WoodKick(BasePreset):
+    def __init__(
+        self,
+        intensity=0.3,
+        duration=0.36,
+        click_freq=1200.0,
+        hp_cut=200.0,
+        body_sweep_ratio=0.8,
+        body_mul_factor=1.9,
+        body_hpf_freq=20.0,
+        body_hpf_q=0.707,
+        body_hpf_type=2,
+        click_env_fadein=0.0005,
+        click_env_fadeout=0.05,
+        click_env_dur=0.05,
+        click_mul_factor=2.0,
+        click_bp_q=55.0,
+        sat_mul=1.5,
+        sat_hpf_freq=200.0,
+        sat_hpf_q=0.307,
+        sat_hpf_type=2,
+        **kw
+    ):
+        kw.setdefault('stereo_w', 0.0)
+        kw.setdefault('enable_reverb', False)
+        super().__init__(
+            intensity=2 * intensity,
+            duration=duration,
+            freq1=45.0,
+            freq2=400.0,
+            **kw
+        )
+        # click
+        self.click_freq = click_freq
+        self.hp_cut = hp_cut
+        # body
+        self.body_sweep_ratio = body_sweep_ratio
+        self.body_mul_factor = body_mul_factor
+        self.body_hpf_freq = body_hpf_freq
+        self.body_hpf_q = body_hpf_q
+        self.body_hpf_type = body_hpf_type
+        # click envelope
+        self.click_env_fadein = click_env_fadein
+        self.click_env_fadeout = click_env_fadeout
+        self.click_env_dur = click_env_dur
+        self.click_mul_factor = click_mul_factor
+        self.click_bp_q = click_bp_q
+        # saturation
+        self.sat_mul = sat_mul
+        self.sat_hpf_freq = sat_hpf_freq
+        self.sat_hpf_q = sat_hpf_q
+        self.sat_hpf_type = sat_hpf_type
+
+    def _body(self, env):
+        glide = self._sweep(
+            self.freq1,
+            self.freq2,
+            self.duration * self.body_sweep_ratio,
+            exp=False
+        )
+        osc = Sine(freq=glide, mul=env * self.body_mul_factor)
+        return Biquad(
+            osc,
+            freq=self.body_hpf_freq,
+            q=self.body_hpf_q,
+            type=self.body_hpf_type
+        )
+
+    def _click(self):
+        env = Fader(
+            fadein=self.click_env_fadein,
+            fadeout=self.click_env_fadeout,
+            dur=self.click_env_dur,
+            mul=self.click_mul_factor * self.intensity
+        ).play()
+        noise = Noise(mul=env)
+        bp = ButBP(noise, freq=self.click_freq, q=self.click_bp_q)
+        return ButHP(bp, freq=self.hp_cut)
+
+    def _build(self):
+        env = self._env(.005)
+        mix = self._body(env) + self._click()
+        sat = Tanh(mix * self.sat_mul)
+        out = Biquad(
+            sat,
+            freq=self.sat_hpf_freq,
+            q=self.sat_hpf_q,
+            type=self.sat_hpf_type
+        )
+        self.chain = {"body_env": env, "mix": mix, "out": out}
+        return out
+
+    def play(self):
+        out = self._build()
+        # start body envelope
+        self.chain["body_env"].play()
+        out.out()
+        return self.chain
+
+if __name__ == "__main__":
+    WoodKick().play()
+
+
+#File:  src/core/audio/__init__.py © 2025 projectemergence. All rights reserved.
+#File:  src/core/__init__.py © 2024 projectemergence. All rights reserved.
+# This file can be left empty, or you can use it to perform package-level initialization if needed.
+
+

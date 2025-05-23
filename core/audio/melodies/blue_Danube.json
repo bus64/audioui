@@ -1,0 +1,15 @@
+{
+  "title": "The Blue Danube (waltz theme)",
+  "composer": "Johann Strauss II",
+  "key": "D major",
+  "tempo": 60,
+  "time_signature": "3/4",
+  "notes": [
+    {"pitch":"F#4","frequency":369.99,"duration_beats":1},
+    {"pitch":"D4","frequency":293.66,"duration_beats":1},
+    {"pitch":"B3","frequency":246.94,"duration_beats":1},
+    {"pitch":"F#4","frequency":369.99,"duration_beats":1},
+    {"pitch":"D4","frequency":293.66,"duration_beats":1},
+    {"pitch":"B3","frequency":246.94,"duration_beats":1}
+  ]
+}

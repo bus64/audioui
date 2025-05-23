@@ -1,0 +1,18 @@
+{
+  "title": "Minuet in G Major",
+  "composer": "Christian Petzold",
+  "key": "G major",
+  "tempo": 90,
+  "time_signature": "3/4",
+  "notes": [
+    {"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"A4","frequency":440.00,"duration_beats":1},
+    {"pitch":"B4","frequency":493.88,"duration_beats":1},
+    {"pitch":"C5","frequency":523.25,"duration_beats":1},
+    {"pitch":"B4","frequency":493.88,"duration_beats":1},
+    {"pitch":"A4","frequency":440.00,"duration_beats":1},
+    {"pitch":"G4","frequency":392.00,"duration_beats":2},
+    {"pitch":"B4","frequency":493.88,"duration_beats":1},
+    {"pitch":"A4","frequency":440.00,"duration_beats":1}
+  ]
+}

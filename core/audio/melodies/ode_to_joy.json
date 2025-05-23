@@ -1,0 +1,23 @@
+{
+  "title": "Ode to Joy",
+  "composer": "Ludwig van Beethoven",
+  "key": "D major",
+  "tempo": 100,
+  "time_signature": "4/4",
+  "notes": [
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},
+    {"pitch":"F#4","frequency":369.99,"duration_beats":1},
+    {"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"G4","frequency":392.00,"duration_beats":1},
+    {"pitch":"F#4","frequency":369.99,"duration_beats":1},
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},
+    {"pitch":"D4","frequency":293.66,"duration_beats":1},
+    {"pitch":"C4","frequency":261.63,"duration_beats":1},
+    {"pitch":"C4","frequency":261.63,"duration_beats":1},
+    {"pitch":"D4","frequency":293.66,"duration_beats":1},
+    {"pitch":"E4","frequency":329.63,"duration_beats":1},
+    {"pitch":"E4","frequency":329.63,"duration_beats":1.5},
+    {"pitch":"D4","frequency":293.66,"duration_beats":0.5}
+  ]
+}
