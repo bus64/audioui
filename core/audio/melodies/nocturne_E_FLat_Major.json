@@ -4,73 +4,748 @@
   "key": "E♭ major",
   "tempo": 60,
   "time_signature": "12/8",
-  "notes": [
-    {"pitch":"B4","frequency":493.88,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
-    {"pitch":"E4","frequency":329.63,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
-    {"pitch":"B4","frequency":493.88,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
-    {"pitch":"E4","frequency":329.63,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
-    {"pitch":"D4","frequency":293.66,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
-    {"pitch":"G3","frequency":196.00,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
-    {"pitch":"D4","frequency":293.66,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
-    {"pitch":"G3","frequency":196.00,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
-
-    {"pitch":"C5","frequency":523.25,"duration_beats":1},{"pitch":"A4","frequency":440.00,"duration_beats":2},
-    {"pitch":"F4","frequency":349.23,"duration_beats":1},{"pitch":"A4","frequency":440.00,"duration_beats":2},
-    {"pitch":"C5","frequency":523.25,"duration_beats":1},{"pitch":"A4","frequency":440.00,"duration_beats":2},
-    {"pitch":"F4","frequency":349.23,"duration_beats":1},{"pitch":"A4","frequency":440.00,"duration_beats":2},
-    {"pitch":"E4","frequency":329.63,"duration_beats":1},{"pitch":"C4","frequency":261.63,"duration_beats":2},
-    {"pitch":"A3","frequency":220.00,"duration_beats":1},{"pitch":"C4","frequency":261.63,"duration_beats":2},
-    {"pitch":"E4","frequency":329.63,"duration_beats":1},{"pitch":"C4","frequency":261.63,"duration_beats":2},
-    {"pitch":"A3","frequency":220.00,"duration_beats":1},{"pitch":"C4","frequency":261.63,"duration_beats":2},
-
-    {"pitch":"B4","frequency":493.88,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
-    {"pitch":"E4","frequency":329.63,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
-    {"pitch":"B4","frequency":493.88,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
-    {"pitch":"E4","frequency":329.63,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
-    {"pitch":"D4","frequency":293.66,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
-    {"pitch":"G3","frequency":196.00,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
-    {"pitch":"D4","frequency":293.66,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
-    {"pitch":"G3","frequency":196.00,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
-
-    {"pitch":"C5","frequency":523.25,"duration_beats":1},{"pitch":"A4","frequency":440.00,"duration_beats":2},
-    {"pitch":"F4","frequency":349.23,"duration_beats":1},{"pitch":"A4","frequency":440.00,"duration_beats":2},
-    {"pitch":"C5","frequency":523.25,"duration_beats":1},{"pitch":"A4","frequency":440.00,"duration_beats":2},
-    {"pitch":"F4","frequency":349.23,"duration_beats":1},{"pitch":"A4","frequency":440.00,"duration_beats":2},
-    {"pitch":"E4","frequency":329.63,"duration_beats":1},{"pitch":"C4","frequency":261.63,"duration_beats":2},
-    {"pitch":"A3","frequency":220.00,"duration_beats":1},{"pitch":"C4","frequency":261.63,"duration_beats":2},
-    {"pitch":"E4","frequency":329.63,"duration_beats":1},{"pitch":"C4","frequency":261.63,"duration_beats":2},
-    {"pitch":"A3","frequency":220.00,"duration_beats":1},{"pitch":"C4","frequency":261.63,"duration_beats":2},
-
-    {"pitch":"G3","frequency":196.00,"duration_beats":0.5},{"pitch":"G2","frequency":98.00,"duration_beats":0.5},
-    {"pitch":"G3","frequency":196.00,"duration_beats":0.5},{"pitch":"G2","frequency":98.00,"duration_beats":0.5},
-    {"pitch":"G3","frequency":196.00,"duration_beats":0.5},{"pitch":"G2","frequency":98.00,"duration_beats":0.5},
-    {"pitch":"G3","frequency":196.00,"duration_beats":0.5},{"pitch":"G2","frequency":98.00,"duration_beats":0.5},
-    {"pitch":"C4","frequency":261.63,"duration_beats":1},{"pitch":"A3","frequency":220.00,"duration_beats":1},
-    {"pitch":"F3","frequency":174.61,"duration_beats":1},{"pitch":"A3","frequency":220.00,"duration_beats":1},
-    {"pitch":"C4","frequency":261.63,"duration_beats":1},{"pitch":"A3","frequency":220.00,"duration_beats":1},
-    {"pitch":"F3","frequency":174.61,"duration_beats":1},{"pitch":"A3","frequency":220.00,"duration_beats":1},
-
-    {"pitch":"D5","frequency":587.33,"duration_beats":0.5},{"pitch":"C5","frequency":523.25,"duration_beats":0.5},
-    {"pitch":"B4","frequency":493.88,"duration_beats":0.5},{"pitch":"C5","frequency":523.25,"duration_beats":0.5},
-    {"pitch":"D5","frequency":587.33,"duration_beats":0.5},{"pitch":"C5","frequency":523.25,"duration_beats":0.5},
-    {"pitch":"B4","frequency":493.88,"duration_beats":0.5},{"pitch":"C5","frequency":523.25,"duration_beats":0.5},
-    {"pitch":"A4","frequency":440.00,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":1},
-    {"pitch":"F4","frequency":349.23,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":1},
-    {"pitch":"A4","frequency":440.00,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":1},
-    {"pitch":"F4","frequency":349.23,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":1},
-
-    {"pitch":"B4","frequency":493.88,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
-    {"pitch":"E4","frequency":329.63,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
-    {"pitch":"B4","frequency":493.88,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
-    {"pitch":"E4","frequency":329.63,"duration_beats":1},{"pitch":"G4","frequency":392.00,"duration_beats":2},
-    {"pitch":"D4","frequency":293.66,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
-    {"pitch":"G3","frequency":196.00,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
-    {"pitch":"D4","frequency":293.66,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
-    {"pitch":"G3","frequency":196.00,"duration_beats":1},{"pitch":"B3","frequency":246.94,"duration_beats":2},
-
-    {"pitch":"E4","frequency":329.63,"duration_beats":2},{"pitch":"C4","frequency":261.63,"duration_beats":2},
-    {"pitch":"A3","frequency":220.00,"duration_beats":2},{"pitch":"C4","frequency":261.63,"duration_beats":2},
-    {"pitch":"E4","frequency":329.63,"duration_beats":2},{"pitch":"C4","frequency":261.63,"duration_beats":2},
-    {"pitch":"A3","frequency":220.00,"duration_beats":2},{"pitch":"C4","frequency":261.63,"duration_beats":2}
+  "created": "2024-01-01",
+  "mood": "Romantic",
+  "description": "A famous nocturne by Frédéric Chopin.",
+  "poem": "N/A",
+  "structure": [
+    {
+      "section": "A",
+      "bars": 8,
+      "time_signature": "12/8"
+    }
+  ],
+  "variations": 1,
+  "remix": {
+    "self_shuffle": 0.0,
+    "exchange_ratio_range": [
+      0.0,
+      0.0
+    ],
+    "transition_blocks": 0
+  },
+  "hands": [
+    [
+      {
+        "pitch": "B4",
+        "frequency": 493.88,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E4",
+        "frequency": 329.63,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B4",
+        "frequency": 493.88,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E4",
+        "frequency": 329.63,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D4",
+        "frequency": 293.66,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B3",
+        "frequency": 246.94,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G3",
+        "frequency": 196.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B3",
+        "frequency": 246.94,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D4",
+        "frequency": 293.66,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B3",
+        "frequency": 246.94,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G3",
+        "frequency": 196.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B3",
+        "frequency": 246.94,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C5",
+        "frequency": 523.25,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A4",
+        "frequency": 440.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "F4",
+        "frequency": 349.23,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A4",
+        "frequency": 440.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C5",
+        "frequency": 523.25,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A4",
+        "frequency": 440.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "F4",
+        "frequency": 349.23,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A4",
+        "frequency": 440.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E4",
+        "frequency": 329.63,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C4",
+        "frequency": 261.63,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A3",
+        "frequency": 220.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C4",
+        "frequency": 261.63,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E4",
+        "frequency": 329.63,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C4",
+        "frequency": 261.63,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A3",
+        "frequency": 220.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C4",
+        "frequency": 261.63,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B4",
+        "frequency": 493.88,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E4",
+        "frequency": 329.63,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B4",
+        "frequency": 493.88,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E4",
+        "frequency": 329.63,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D4",
+        "frequency": 293.66,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B3",
+        "frequency": 246.94,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G3",
+        "frequency": 196.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B3",
+        "frequency": 246.94,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D4",
+        "frequency": 293.66,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B3",
+        "frequency": 246.94,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G3",
+        "frequency": 196.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B3",
+        "frequency": 246.94,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C5",
+        "frequency": 523.25,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A4",
+        "frequency": 440.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "F4",
+        "frequency": 349.23,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A4",
+        "frequency": 440.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C5",
+        "frequency": 523.25,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A4",
+        "frequency": 440.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "F4",
+        "frequency": 349.23,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A4",
+        "frequency": 440.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E4",
+        "frequency": 329.63,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C4",
+        "frequency": 261.63,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A3",
+        "frequency": 220.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C4",
+        "frequency": 261.63,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E4",
+        "frequency": 329.63,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C4",
+        "frequency": 261.63,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A3",
+        "frequency": 220.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C4",
+        "frequency": 261.63,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G3",
+        "frequency": 196.0,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G2",
+        "frequency": 98.0,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G3",
+        "frequency": 196.0,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G2",
+        "frequency": 98.0,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G3",
+        "frequency": 196.0,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G2",
+        "frequency": 98.0,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G3",
+        "frequency": 196.0,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G2",
+        "frequency": 98.0,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C4",
+        "frequency": 261.63,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A3",
+        "frequency": 220.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "F3",
+        "frequency": 174.61,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A3",
+        "frequency": 220.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C4",
+        "frequency": 261.63,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A3",
+        "frequency": 220.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "F3",
+        "frequency": 174.61,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A3",
+        "frequency": 220.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D5",
+        "frequency": 587.33,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C5",
+        "frequency": 523.25,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B4",
+        "frequency": 493.88,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C5",
+        "frequency": 523.25,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D5",
+        "frequency": 587.33,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C5",
+        "frequency": 523.25,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B4",
+        "frequency": 493.88,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C5",
+        "frequency": 523.25,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A4",
+        "frequency": 440.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "F4",
+        "frequency": 349.23,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A4",
+        "frequency": 440.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "F4",
+        "frequency": 349.23,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B4",
+        "frequency": 493.88,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E4",
+        "frequency": 329.63,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B4",
+        "frequency": 493.88,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E4",
+        "frequency": 329.63,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D4",
+        "frequency": 293.66,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B3",
+        "frequency": 246.94,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G3",
+        "frequency": 196.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B3",
+        "frequency": 246.94,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D4",
+        "frequency": 293.66,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B3",
+        "frequency": 246.94,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G3",
+        "frequency": 196.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B3",
+        "frequency": 246.94,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E4",
+        "frequency": 329.63,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C4",
+        "frequency": 261.63,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A3",
+        "frequency": 220.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C4",
+        "frequency": 261.63,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E4",
+        "frequency": 329.63,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C4",
+        "frequency": 261.63,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A3",
+        "frequency": 220.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C4",
+        "frequency": 261.63,
+        "duration_beats": 2,
+        "intensity": 0.7
+      }
+    ]
   ]
 }

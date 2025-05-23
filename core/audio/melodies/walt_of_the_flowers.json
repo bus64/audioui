@@ -4,11 +4,58 @@
   "key": "D major",
   "tempo": 120,
   "time_signature": "3/4",
-  "notes": [
-    {"pitch":"D5","frequency":587.33,"duration_beats":1},
-    {"pitch":"F#5","frequency":739.99,"duration_beats":1},
-    {"pitch":"A5","frequency":880.00,"duration_beats":1},
-    {"pitch":"D6","frequency":1174.66,"duration_beats":2},
-    {"pitch":"C6","frequency":1046.50,"duration_beats":1}
+  "created": "2024-01-01",
+  "mood": "Magical",
+  "description": "A famous waltz from Tchaikovsky's ballet 'The Nutcracker'.",
+  "poem": "N/A",
+  "structure": [
+    {
+      "section": "A",
+      "bars": 8,
+      "time_signature": "3/4"
+    }
+  ],
+  "variations": 1,
+  "remix": {
+    "self_shuffle": 0.0,
+    "exchange_ratio_range": [
+      0.0,
+      0.0
+    ],
+    "transition_blocks": 0
+  },
+  "hands": [
+    [
+      {
+        "pitch": "D5",
+        "frequency": 587.33,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "F#5",
+        "frequency": 739.99,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A5",
+        "frequency": 880.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D6",
+        "frequency": 1174.66,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C6",
+        "frequency": 1046.5,
+        "duration_beats": 1,
+        "intensity": 0.7
+      }
+    ]
   ]
 }
