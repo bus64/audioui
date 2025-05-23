@@ -83,85 +83,55 @@ class AudioEngine:
         self.mute=False
 
     async def _cleanup_stopped_presets(self):
+        """
+        Walk self.active_presets and drop any whose
+        instance (list of Faders or PyoObject) has finished playing.
+        """
         logger.debug("Running _cleanup_stopped_presets")
-        # Iterate over a copy for safe removal
-        for preset_info in self.active_presets[:]: 
-            instance = preset_info.get("instance")
-            if not instance:
-                logger.warning("Preset_info missing 'instance': %s. Removing.", preset_info.get('name', 'Unknown'))
-                try:
-                    self.active_presets.remove(preset_info)
-                except ValueError: # Should not happen if iterating over a copy and item is from original
-                    logger.warning("Failed to remove preset_info that was already missing instance.")
+        for info in list(self.active_presets):
+            inst = info.get("instance")
+            name = info.get("name", "Unknown")
+
+            if not inst:
+                logger.warning("Missing instance for '%s'. Removing.", name)
+                self.active_presets.remove(info)
                 continue
 
-            try:
-                # Handle lists of Faders (e.g., from melody playback in BasePreset)
-                if isinstance(instance, list):
-                    if not instance: # Empty list
-                        logger.info("Preset '%s' instance is an empty list. Removing.", preset_info.get("name", "Unknown"))
-                        if preset_info in self.active_presets:
-                             self.active_presets.remove(preset_info)
-                        continue # Skip to next preset_info
-
-                    all_faders_done = True 
-                    fader_found = False
-                    for fader_obj in instance: # Renamed to fader_obj to avoid conflict with pyo.Fader if imported directly
-                        if hasattr(fader_obj, 'isDone') and callable(fader_obj.isDone):
-                            fader_found = True
-                            if not fader_obj.isDone():
-                                all_faders_done = False
-                                break 
-                        # else: object in list is not a Fader or doesn't have isDone; ignore for this check.
-                    
-                    if fader_found and all_faders_done:
-                        logger.info("Preset '%s' (melody/sequence) all faders are done. Removing.", preset_info.get("name", "Unknown"))
-                        if preset_info in self.active_presets:
-                            self.active_presets.remove(preset_info)
-                    elif not fader_found:
-                        # This case means the list didn't contain any objects that looked like Faders.
-                        # This might be an unexpected state, so log it.
-                        logger.debug("Preset '%s' instance is a list, but contains no faders with isDone method. Skipping cleanup for this item.", preset_info.get("name", "Unknown"))
-                    else:
-                        # If faders were found but not all are done, keep the preset active.
-                        logger.debug("Preset '%s' (melody/sequence) still has active faders. Keeping.", preset_info.get("name", "Unknown"))
-                    # Important: Continue to next preset_info after handling a list instance
-                    continue 
-
-                # Existing logic for single PyoObject instances
-                if hasattr(instance, 'isPlaying') and callable(instance.isPlaying):
-                    if not instance.isPlaying():
-                        logger.info("Preset '%s' is no longer playing. Removing.", preset_info.get("name", "Unknown"))
-                        if preset_info in self.active_presets:
-                            self.active_presets.remove(preset_info)
-                    # else: preset is playing, keep it
-                elif hasattr(instance, 'getIsPlaying') and callable(instance.getIsPlaying): # Alternative common name
-                    if not instance.getIsPlaying():
-                        logger.info("Preset '%s' (using getIsPlaying) is no longer playing. Removing.", preset_info.get("name", "Unknown"))
-                        if preset_info in self.active_presets:
-                            self.active_presets.remove(preset_info)
-                    # else: preset is playing, keep it
+            # 1) list of Faders
+            if isinstance(inst, list):
+                if not inst:
+                    logger.info("'%s' empty list. Removing.", name)
+                    self.active_presets.remove(info)
+                elif all(getattr(f, "isDone", lambda: False)() for f in inst):
+                    logger.info("'%s' all faders done. Removing.", name)
+                    self.active_presets.remove(info)
                 else:
-                    # If it's not a list and doesn't have a known playing check, log it.
-                    logger.debug("Preset '%s' object type %s does not have a recognized isPlaying/getIsPlaying method or is not a list. Skipping cleanup for this item.", preset_info.get("name", "Unknown"), type(instance).__name__)
+                    logger.debug("'%s' faders still active. Keeping.", name)
+                continue
 
-            except AttributeError as e:
-                # This catch block is primarily for the case where 'instance' was expected to be a Pyo object 
-                # but 'isPlaying' or 'getIsPlaying' was missing, or if 'isDone' was missing on a list item.
-                logger.error(f"AttributeError checking preset {preset_info.get('name', 'Unknown')}: {e}. This might indicate an unexpected instance type or structure. Removing from active list for safety.")
-                if preset_info in self.active_presets: # Check if not already removed
-                    self.active_presets.remove(preset_info)
-            except Exception as e:
-                logger.error(f"Error checking if preset {preset_info.get('name', 'Unknown')} is playing: {e}. Removing from active list.")
-                if preset_info in self.active_presets: # Check if not already removed
-                     self.active_presets.remove(preset_info)
-        logger.debug("Finished _cleanup_stopped_presets. Active presets count: %d", len(self.active_presets))
+            # 2) single PyoObject
+            for method in ("isPlaying", "getIsPlaying"):
+                if hasattr(inst, method) and callable(getattr(inst, method)):
+                    alive = getattr(inst, method)()
+                    if not alive:
+                        logger.info("'%s' stopped playing. Removing.", name)
+                        self.active_presets.remove(info)
+                    else:
+                        logger.debug("'%s' still playing. Keeping.", name)
+                    break
+            else:
+                logger.debug(
+                    "'%s' of type %s has no playback check. Skipping cleanup.",
+                    name,
+                    type(inst).__name__,
+                )
 
+        logger.debug("Finished _cleanup_stopped_presets. Active count: %d", len(self.active_presets))
 
     async def _periodic_cleanup_task(self):
         while not self.shutdown_event.is_set():
             await asyncio.sleep(self.CLEANUP_INTERVAL)
-            if self.shutdown_event.is_set(): # Re-check after sleep before cleanup
+            if self.shutdown_event.is_set():
                 break
             logger.debug("Periodic cleanup task waking up.")
             await self._cleanup_stopped_presets()
@@ -180,20 +150,18 @@ class AudioEngine:
                     self.cmd_queue.task_done()
             except asyncio.CancelledError:
                 logger.info("Main run loop task cancelled.")
-                break # Exit loop if server task is cancelled
+                break
 
         logger.info("Shutting down server...")
-        # Stop and cleanup the periodic task
         if self._cleanup_task:
             self._cleanup_task.cancel()
             try:
                 await self._cleanup_task
             except asyncio.CancelledError:
-                logger.info("Preset cleanup task successfully cancelled.")
+                logger.info("Preset cleanup task cancelled.")
             except Exception as e:
-                logger.error(f"Exception during cleanup task shutdown: {e}")
-        
-        # separate calls to avoid chaining None
+                logger.error("Error during cleanup shutdown: %s", e)
+
         self.server.stop()
         self.server.shutdown()
         logger.info("server shut down")
