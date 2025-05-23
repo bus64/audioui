@@ -4,14 +4,76 @@
   "key": "D minor",
   "tempo": 110,
   "time_signature": "4/4",
-  "notes": [
-    {"pitch":"D4","frequency":293.66,"duration_beats":2},
-    {"pitch":"A4","frequency":440.00,"duration_beats":2},
-    {"pitch":"Bb4","frequency":466.16,"duration_beats":2},
-    {"pitch":"F4","frequency":349.23,"duration_beats":2},
-    {"pitch":"G4","frequency":392.00,"duration_beats":2},
-    {"pitch":"D4","frequency":293.66,"duration_beats":2},
-    {"pitch":"C4","frequency":261.63,"duration_beats":2},
-    {"pitch":"A4","frequency":440.00,"duration_beats":2}
+  "created": "2024-01-01",
+  "mood": "Baroque",
+  "description": "A traditional baroque theme.",
+  "poem": "N/A",
+  "structure": [
+    {
+      "section": "A",
+      "bars": 8,
+      "time_signature": "4/4"
+    }
+  ],
+  "variations": 1,
+  "remix": {
+    "self_shuffle": 0.0,
+    "exchange_ratio_range": [
+      0.0,
+      0.0
+    ],
+    "transition_blocks": 0
+  },
+  "hands": [
+    [
+      {
+        "pitch": "D4",
+        "frequency": 293.66,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A4",
+        "frequency": 440.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "Bb4",
+        "frequency": 466.16,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "F4",
+        "frequency": 349.23,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D4",
+        "frequency": 293.66,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C4",
+        "frequency": 261.63,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A4",
+        "frequency": 440.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      }
+    ]
   ]
 }

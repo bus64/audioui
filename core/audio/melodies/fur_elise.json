@@ -4,29 +4,154 @@
   "key": "A minor",
   "tempo": 120,
   "time_signature": "3/8",
-  "notes": [
-    {"pitch": "E5",  "frequency": 659.25, "duration_beats": 0.5},
-    {"pitch": "D#5", "frequency": 622.25, "duration_beats": 0.5},
-    {"pitch": "E5",  "frequency": 659.25, "duration_beats": 0.5},
-    {"pitch": "D#5", "frequency": 622.25, "duration_beats": 0.5},
-    {"pitch": "E5",  "frequency": 659.25, "duration_beats": 0.5},
-    {"pitch": "B4",  "frequency": 493.88, "duration_beats": 0.5},
-    {"pitch": "D5",  "frequency": 587.33, "duration_beats": 0.5},
-    {"pitch": "C5",  "frequency": 523.25, "duration_beats": 0.5},
-    {"pitch": "A4",  "frequency": 440.00, "duration_beats": 1.0},
-
-    {"pitch": "C4",  "frequency": 261.63, "duration_beats": 0.5},
-    {"pitch": "E4",  "frequency": 329.63, "duration_beats": 0.5},
-    {"pitch": "A4",  "frequency": 440.00, "duration_beats": 1.0},
-
-    {"pitch": "E5",  "frequency": 659.25, "duration_beats": 0.5},
-    {"pitch": "D#5", "frequency": 622.25, "duration_beats": 0.5},
-    {"pitch": "E5",  "frequency": 659.25, "duration_beats": 0.5},
-    {"pitch": "D#5", "frequency": 622.25, "duration_beats": 0.5},
-    {"pitch": "E5",  "frequency": 659.25, "duration_beats": 0.5},
-    {"pitch": "B4",  "frequency": 493.88, "duration_beats": 0.5},
-    {"pitch": "D5",  "frequency": 587.33, "duration_beats": 0.5},
-    {"pitch": "C5",  "frequency": 523.25, "duration_beats": 0.5},
-    {"pitch": "A4",  "frequency": 440.00, "duration_beats": 1.0}
+  "created": "2024-01-01",
+  "mood": "Sentimental",
+  "description": "A famous bagatelle by Ludwig van Beethoven.",
+  "poem": "N/A",
+  "structure": [
+    {
+      "section": "A",
+      "bars": 8,
+      "time_signature": "3/8"
+    }
+  ],
+  "variations": 1,
+  "remix": {
+    "self_shuffle": 0.0,
+    "exchange_ratio_range": [
+      0.0,
+      0.0
+    ],
+    "transition_blocks": 0
+  },
+  "hands": [
+    [
+      {
+        "pitch": "E5",
+        "frequency": 659.25,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D#5",
+        "frequency": 622.25,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E5",
+        "frequency": 659.25,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D#5",
+        "frequency": 622.25,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E5",
+        "frequency": 659.25,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B4",
+        "frequency": 493.88,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D5",
+        "frequency": 587.33,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C5",
+        "frequency": 523.25,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A4",
+        "frequency": 440.0,
+        "duration_beats": 1.0,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C4",
+        "frequency": 261.63,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E4",
+        "frequency": 329.63,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A4",
+        "frequency": 440.0,
+        "duration_beats": 1.0,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E5",
+        "frequency": 659.25,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D#5",
+        "frequency": 622.25,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E5",
+        "frequency": 659.25,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D#5",
+        "frequency": 622.25,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E5",
+        "frequency": 659.25,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B4",
+        "frequency": 493.88,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D5",
+        "frequency": 587.33,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C5",
+        "frequency": 523.25,
+        "duration_beats": 0.5,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A4",
+        "frequency": 440.0,
+        "duration_beats": 1.0,
+        "intensity": 0.7
+      }
+    ]
   ]
 }

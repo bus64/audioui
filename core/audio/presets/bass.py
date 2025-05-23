@@ -9,35 +9,39 @@ class Bass(BasePreset):
         self,
         intensity=0.98,
         duration=0.65,
-        base_freq=1318.2567385564075,
-        fade_in=0.0,
-        fade_out=0.0,
-        tone_freq_ratio=223.872113856834,
+        base_freq=82.41,      # E2
+        fade_in=0.01,
+        fade_out=0.2,
+        tone_freq_ratio=2.0,  # Octave
         tone_mul_factor=0.62,
-        dist_drive=0.35,
-        dist_slope=0.44,
+        dist_drive=0.05,
+        dist_slope=0.1,
         dist_mul_factor=0.56,
+        **kw  # Added **kw to capture any extra args for BasePreset
     ):
-        super().__init__(intensity * 2, duration)
+        if duration == 0: # Ensure duration is not zero
+            duration = 0.001
+        super().__init__(intensity=intensity, duration=duration, **kw) # Use passed intensity, duration
+        
         # core inputs
-        self.base_freq = 1318.2567385564075
+        self.base_freq = base_freq
         # fader constants
-        self.fade_in = 0.0
-        self.fade_out = 0.0
+        self.fade_in = fade_in
+        self.fade_out = fade_out
         # tone constants
-        self.tone_freq_ratio = 223.872113856834
-        self.tone_mul_factor = 0.62
+        self.tone_freq_ratio = tone_freq_ratio
+        self.tone_mul_factor = tone_mul_factor
         # distortion constants
-        self.dist_drive = 0.35
-        self.dist_slope = 0.44
-        self.dist_mul_factor = 0.56
+        self.dist_drive = dist_drive
+        self.dist_slope = dist_slope
+        self.dist_mul_factor = dist_mul_factor
 
     def _build(self):
         # use named attributes everywhere instead of literals
         fader = Fader(
             fadein=self.fade_in,
             fadeout=self.fade_out,
-            dur=self.duration * 2,
+            dur=self.duration, # duration is now correctly passed from super
             mul=self.intensity
         )
         tone = Sine(

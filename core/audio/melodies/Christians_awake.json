@@ -4,32 +4,154 @@
   "key": "G major",
   "tempo": 100,
   "time_signature": "4/4",
-  "notes": [
-    {"pitch":"G4","frequency":392.00,"duration_beats":1},
-    {"pitch":"A4","frequency":440.00,"duration_beats":1},
-    {"pitch":"B4","frequency":493.88,"duration_beats":2},
-    {"pitch":"C5","frequency":523.25,"duration_beats":1},
-    {"pitch":"B4","frequency":493.88,"duration_beats":1},
-    {"pitch":"A4","frequency":440.00,"duration_beats":2},
-
-    {"pitch":"G4","frequency":392.00,"duration_beats":1},
-    {"pitch":"E4","frequency":329.63,"duration_beats":1},
-    {"pitch":"D4","frequency":293.66,"duration_beats":2},
-    
-    {"pitch":"E4","frequency":329.63,"duration_beats":1},
-    {"pitch":"F#4","frequency":369.99,"duration_beats":1},
-    {"pitch":"G4","frequency":392.00,"duration_beats":2},
-
-    {"pitch":"B4","frequency":493.88,"duration_beats":1},
-    {"pitch":"C5","frequency":523.25,"duration_beats":1},
-    {"pitch":"D5","frequency":587.33,"duration_beats":2},
-
-    {"pitch":"C5","frequency":523.25,"duration_beats":1},
-    {"pitch":"B4","frequency":493.88,"duration_beats":1},
-    {"pitch":"A4","frequency":440.00,"duration_beats":2},
-
-    {"pitch":"G4","frequency":392.00,"duration_beats":1},
-    {"pitch":"D4","frequency":293.66,"duration_beats":1},
-    {"pitch":"G4","frequency":392.00,"duration_beats":2}
+  "created": "2024-01-01",
+  "mood": "Festive",
+  "description": "A traditional Christmas carol.",
+  "poem": "N/A",
+  "structure": [
+    {
+      "section": "A",
+      "bars": 8,
+      "time_signature": "4/4"
+    }
+  ],
+  "variations": 1,
+  "remix": {
+    "self_shuffle": 0.0,
+    "exchange_ratio_range": [
+      0.0,
+      0.0
+    ],
+    "transition_blocks": 0
+  },
+  "hands": [
+    [
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A4",
+        "frequency": 440.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B4",
+        "frequency": 493.88,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C5",
+        "frequency": 523.25,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B4",
+        "frequency": 493.88,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A4",
+        "frequency": 440.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E4",
+        "frequency": 329.63,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D4",
+        "frequency": 293.66,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "E4",
+        "frequency": 329.63,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "F#4",
+        "frequency": 369.99,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B4",
+        "frequency": 493.88,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C5",
+        "frequency": 523.25,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D5",
+        "frequency": 587.33,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "C5",
+        "frequency": 523.25,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "B4",
+        "frequency": 493.88,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "A4",
+        "frequency": 440.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "D4",
+        "frequency": 293.66,
+        "duration_beats": 1,
+        "intensity": 0.7
+      },
+      {
+        "pitch": "G4",
+        "frequency": 392.0,
+        "duration_beats": 2,
+        "intensity": 0.7
+      }
+    ]
   ]
 }
