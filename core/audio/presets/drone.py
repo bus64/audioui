@@ -66,3 +66,4 @@ class Drone(BasePreset):  # Renamed class
         self.chain_output = self._build()
         self.chain_output.out()
         return self.chain_output # Return the Pyo object that is outputting sound
+
