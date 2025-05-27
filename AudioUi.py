@@ -5,6 +5,8 @@ import os, json, time, math, traceback, inspect, importlib.util
 from pathlib import Path
 from tkinter import *
 from tkinter import ttk
+import tkinter as tk # Added for tk.TclError, though TclError might be global due to 'from tkinter import *'
+# import traceback # Already imported
 from core.audio.audio_engine_client import AudioEngineClient
 
 PRESET_DIR = Path("core/audio/presets")
@@ -123,7 +125,7 @@ def build_melody_tab(notebook):
         for ev in raw_events:
             events.append({
                 "time_offset": ev["time"] * (60.0/tempo),
-                "preset": "lead",
+                "preset": "piano", # Changed "lead" to "piano"
                 "params": {
                     "notes": ev["notes"],
                     "durations": ev["durations"],
@@ -147,6 +149,32 @@ def build_melody_tab(notebook):
 
     Button(tab, text="▶ Play Melody", bg=BTN, fg="white", command=trigger_melody).pack(pady=5)
     Button(tab, text="■ Stop Melody", bg="#666", fg="white", command=stop_melody).pack(pady=3)
+
+
+def play_selected(notebook, presets_data):
+    try:
+        current_tab_index = notebook.index(notebook.select())
+        preset_name = notebook.tab(current_tab_index, "text")
+    except TclError: # tk.TclError changed to TclError as tkinter is imported with *
+        print("[AudioUi] Error: Could not get selected tab information (no tab selected?).")
+        return
+
+    if preset_name == "🎼 Melody":
+        print("[AudioUi] Info: Melody playback is handled by the 'Play Melody' button in the Melody tab.")
+        return
+
+    if preset_name in _state:
+        params = _state[preset_name]
+        print(f"[AudioUi] Playing preset: {preset_name} with params: {params}")
+        try:
+            client.play_preset(preset_name, **params)
+        except Exception as e:
+            print(f"[AudioUi] Error during client.play_preset for '{preset_name}': {e}")
+            traceback.print_exc() # Provides more detailed error info
+    elif preset_name in presets_data:
+        print(f"[AudioUi] Error: Preset '{preset_name}' found in presets_data but not in _state. UI state not initialized correctly?")
+    else:
+        print(f"[AudioUi] Error: Unknown preset or tab selected: '{preset_name}'")
 
 
 if __name__ == "__main__":

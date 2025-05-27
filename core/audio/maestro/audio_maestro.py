@@ -90,11 +90,12 @@ class Maestro:
                 for ev in raw:
                     events.append({
                         "time_offset": ev["time"] * (60.0/self.tempo),
-                        "preset":      "lead",
+                        "preset":      "piano", # Changed "lead" to "piano"
                         "params":      {
                             "notes":     ev["notes"],
                             "durations": ev["durations"],
-                            "intensity": ev["intensity"]
+                            "intensity": ev["intensity"],
+                            "tempo":     self.tempo  # Pass current tempo
                         }
                     })
                 # orchestration

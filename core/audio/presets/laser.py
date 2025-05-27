@@ -9,14 +9,18 @@ class Laser(BasePreset):
         self,
         intensity=0.9,
         duration=0.5,
-        base_freq=800.0,
-        mod_depth=50.0,
-        mod_rate=20.0,
-        fade_in=0.00,
-        fade_out=0.2,
-        fader_mul_factor=1.0,
+        base_freq=300.0,    # Changed default
+        mod_depth=10.0,     # Changed default
+        mod_rate=5.0,       # Changed default
+        fade_in=0.1,        # Changed default
+        fade_out=0.5,       # Changed default
+        fader_mul_factor=1.0, # Keeping this for now, though often intensity alone is enough
+        **kw # Added **kw
     ):
-        super().__init__(intensity, duration)
+        if duration == 0: # Ensure duration is not zero
+            duration = 0.001
+        super().__init__(intensity=intensity, duration=duration, **kw) # Pass intensity, duration
+        
         # core
         self.base_freq = base_freq
         self.mod_depth = mod_depth
@@ -24,7 +28,7 @@ class Laser(BasePreset):
         # envelope settings
         self.fade_in = fade_in
         self.fade_out = fade_out
-        self.fader_mul_factor = fader_mul_factor
+        self.fader_mul_factor = fader_mul_factor # Still here, consider if it's redundant with self.intensity
 
     def _build(self):
         # amplitude envelope

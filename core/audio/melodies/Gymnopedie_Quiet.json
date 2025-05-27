@@ -1,5 +1,5 @@
 {
-  "title": "Gymnopédie No. 1",
+  "title": "Gymnopédie (Quiet Version)",
   "composer": "Erik Satie",
   "key": "D major",
   "tempo": 60,
@@ -30,25 +30,25 @@
         "pitch": "G4",
         "frequency": 392.0,
         "duration_beats": 3,
-        "intensity": 0.7
+        "intensity": 0.49
       },
       {
         "pitch": "F#4",
         "frequency": 369.99,
         "duration_beats": 3,
-        "intensity": 0.7
+        "intensity": 0.49
       },
       {
         "pitch": "E4",
         "frequency": 329.63,
         "duration_beats": 3,
-        "intensity": 0.7
+        "intensity": 0.49
       },
       {
         "pitch": "D4",
         "frequency": 293.66,
         "duration_beats": 3,
-        "intensity": 0.7
+        "intensity": 0.49
       }
     ]
   ]

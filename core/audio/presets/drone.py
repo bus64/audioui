@@ -1,24 +1,68 @@
 # File: core/audio/presets/drone.py © 2025 projectemergence. All rights reserved.
 #!/usr/bin/env python3
 
-from pyo import Fader, Sine, SigTo
+from pyo import Fader, Sine, Mix # Changed Sum to Mix
 from core.audio.presets.base_preset import BasePreset
 
-class DronePreset(BasePreset):
-    """Continuous drone whose level & pitch track settled_ratio & visual_metric."""
-    def __init__(self, *, settled_ratio: float = 0.0, visual_metric: float = 0.0,fade_in=0.5,fade_out=0.1,dur=0.89):
-        super().__init__()  # uses default intensity/duration
-        self.settled_ratio = 0.0
-        self.visual_metric = 0.0
-        self.fade_in=0.5
-        self.fade_out=0.1
-        self.dur=0.89
-    def play(self):
-        env  = Fader(fadein=self.fade_in, fadeout=self.fade_out, dur=0.89, mul=self.settled_ratio).play()
-        freq = SigTo(value=200 + self.visual_metric * 800, time=0.1)
-        return Sine(freq=freq, mul=env * 0.3).out()
+class Drone(BasePreset):  # Renamed class
+    """Continuous drone with adjustable complexity."""
+    def __init__(
+        self,
+        intensity=0.4,
+        duration=10.0,
+        base_freq=100.0,
+        complexity=0.2, # Range 0-1
+        fade_in=2.0,
+        fade_out=2.0,
+        lfo_mod_depth_factor=5.0, # New parameter
+        lfo_mod_rate_factor=0.1,  # New parameter
+        **kw
+    ):
+        if duration == 0: # Ensure duration is not zero
+            duration = 0.001 
+        super().__init__(intensity=intensity, duration=duration, **kw)
+        
+        self.base_freq = base_freq
+        self.complexity = complexity # 0-1 range
+        self.fade_in = fade_in
+        self.fade_out = fade_out
+        self.lfo_mod_depth_factor = lfo_mod_depth_factor
+        self.lfo_mod_rate_factor = lfo_mod_rate_factor
+        # self.dur is inherited from BasePreset via super().__init__
+
     def _build(self):
-        # one-liner envelope × drone
-        env = Fader(fadein=self.fade_in, fadeout=self.fade_out, dur=0.89, mul=self.intensity).play()
-        freq = SigTo(value=200 + self.visual_metric * 800, time=0.1)
-        return Sine(freq=freq, mul=env * 0.3)
+        env = Fader(fadein=self.fade_in, fadeout=self.fade_out, dur=self.duration, mul=self.intensity).play()
+        
+        # Main LFO Modulation for primary sine
+        # LFO rate and depth are scaled by complexity
+        lfo_rate = max(0.001, self.complexity * self.lfo_mod_rate_factor)
+        lfo_depth = self.complexity * self.lfo_mod_depth_factor
+        mod_lfo = Sine(freq=lfo_rate, mul=lfo_depth)
+        
+        main_sine_freq = self.base_freq + mod_lfo
+        main_sine = Sine(freq=main_sine_freq, mul=env)
+        
+        output_signal = main_sine
+        
+        # Secondary Oscillator (based on high complexity)
+        if self.complexity > 0.5:
+            detune_factor = 1.0 + (self.complexity - 0.5) * 0.02 
+            secondary_amp_factor = (self.complexity - 0.5) * 0.5 
+            
+            secondary_sine_freq = self.base_freq * detune_factor
+            # Ensure secondary sine also uses the main envelope
+            secondary_sine = Sine(freq=secondary_sine_freq, mul=env * secondary_amp_factor)
+            
+            # Summing the main modulated sine and the secondary sine
+            # Adjust overall gain if necessary, for now simple sum
+            output_signal = Mix([main_sine, secondary_sine], mul=1.0) # Changed Sum to Mix
+
+        self.chain = output_signal # Storing the final output PyoObject
+            
+        return self.chain
+
+    def play(self):
+        # _build now correctly returns the PyoObject (or a chain of them)
+        self.chain_output = self._build()
+        self.chain_output.out()
+        return self.chain_output # Return the Pyo object that is outputting sound
