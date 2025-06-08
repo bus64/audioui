@@ -103,16 +103,21 @@ class BasePreset(metaclass=PresetMeta):
                 or self._per_note_intensities
                 or [self.intensity] * len(self.notes)
             )
+            offset = 0.0
             for f, d, i in zip(self.notes, self.durations, ints):
                 # Calculate duration in seconds using tempo
                 # Default to 120 bpm if self.tempo is invalid (e.g., 0 or not set)
                 effective_tempo = self.tempo if self.tempo and self.tempo > 0 else 120.0
                 duration_in_seconds = d * (60.0 / effective_tempo)
-                
+
                 env = Fader(fadein=0.005, fadeout=0.02, dur=duration_in_seconds, mul=i)
                 osc = Sine(freq=f, mul=env)
+                env.play(delay=offset)
+                out = self._fx_chain(osc)
+                self._keep(out).out(delay=offset)
                 seq.append((env, osc))
-            built = seq
+                offset += duration_in_seconds
+            return [env for env, _ in seq]
         else:
             built = self._build()
 
@@ -122,7 +127,7 @@ class BasePreset(metaclass=PresetMeta):
                 fader.play()
                 out = self._fx_chain(sig)
                 self._keep(out).out()
-            return [item[0] for item in built] # Return list of Faders
+            return [item[0] for item in built]  # Return list of Faders
 
         # single-shot case
         dry = built
