@@ -1,7 +1,16 @@
 # File: core/audio/presets/drone.py © 2025 projectemergence. All rights reserved.
 #!/usr/bin/env python3
 
-from pyo import Fader, Sine, Sum
+try:
+    from pyo import Fader, Sine, Sum
+except Exception:  # pragma: no cover - fallback when pyo missing or outdated
+    from pyo import Fader, Sine  # type: ignore
+    def Sum(sig_list, mul=1.0):
+        """Basic fallback summing implementation."""
+        out = sig_list[0]
+        for s in sig_list[1:]:
+            out = out + s
+        return out * mul
 from core.audio.presets.base_preset import BasePreset
 
 class Drone(BasePreset):  # Renamed class
