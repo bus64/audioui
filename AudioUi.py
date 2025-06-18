@@ -27,14 +27,25 @@ def discover_presets():
             spec = importlib.util.spec_from_file_location(py.stem, py)
             mod = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(mod)
-            cls = next(c for _, c in inspect.getmembers(mod, inspect.isclass) if issubclass(c, BasePreset) and c is not BasePreset)
+            cls = next(
+                c for _, c in inspect.getmembers(mod, inspect.isclass)
+                if issubclass(c, BasePreset) and c is not BasePreset
+            )
             sig = inspect.signature(cls.__init__)
-            fields = [(n, p.default if p.default is not inspect._empty else 0.0)
-                      for n, p in sig.parameters.items()
-                      if n != "self"]
-            out[py.stem] = (cls, fields)
+            fields = [
+                (n, p.default if p.default is not inspect._empty else 0.0)
+                for n, p in sig.parameters.items()
+                if n != "self"
+            ]
+            supports_melody = "notes" in sig.parameters and "durations" in sig.parameters
+            out[py.stem] = {
+                "class": cls,
+                "fields": fields,
+                "supports_melody": supports_melody,
+            }
         except Exception:
-            print(f"[ERROR] {py.name}:"); traceback.print_exc()
+            print(f"[ERROR] {py.name}:")
+            traceback.print_exc()
     return out
 
 def build_slider(parent, preset, param, default):
@@ -121,20 +132,38 @@ def build_melody_tab(notebook):
         total_secs = 8.0 * (60.0 / tempo)
         timer.update({"active": True, "start": time.time(), "dur": total_secs})
         tab.after(100, tick_progress)
+        choices = [preset_box.get(i) for i in preset_box.curselection()]
+
+        # pick a melody-capable preset from the chosen list
+        lead_preset = next(
+            (p for p in choices if presets.get(p, {}).get("supports_melody")),
+            None
+        )
+        if not lead_preset:
+            lead_preset = next(
+                (p for p, data in presets.items() if data.get("supports_melody")),
+                "piano"
+            )
+
+        # remove lead preset from accompaniment choices if present
+        choices = [c for c in choices if c != lead_preset]
+
         events = []
         for ev in raw_events:
             events.append({
                 "time_offset": ev["time"] * (60.0/tempo),
-                "preset": "lead",
+                "preset": lead_preset,
                 "params": {
                     "notes": ev["notes"],
                     "durations": ev["durations"],
                     "intensity": ev["intensity"]
                 }
             })
-        choices = [preset_box.get(i) for i in preset_box.curselection()]
+
+        # remaining choices are used for accompaniment
         for part, cfg in parts_cfg.items():
-            if not choices: continue
+            if not choices:
+                continue
             events.append({
                 "time_offset": 0.0,
                 "preset": choices[hash(part)%len(choices)],
@@ -198,9 +227,9 @@ if __name__ == "__main__":
     style.map("TNotebook.Tab", background=[("selected", BTN)])
 
     presets = discover_presets()
-    for name, (_, fields) in presets.items():
+    for name, data in presets.items():
         _state[name] = {}
-        build_preset_tab(notebook, name, fields)
+        build_preset_tab(notebook, name, data["fields"])
 
     build_melody_tab(notebook)
     root.mainloop()
