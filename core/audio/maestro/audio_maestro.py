@@ -31,6 +31,15 @@ class Maestro:
         self.all_presets  = list(registry.preset_map)
         self.logger.info(f"All presets discovered: {self.all_presets}")
 
+        # presets capable of playing melodies
+        self.melody_presets = [
+            name for name, meta in self.presets_meta.items()
+            if "notes" in meta and "durations" in meta
+        ]
+        if not self.melody_presets:
+            self.melody_presets = ["piano"] if "piano" in self.all_presets else []
+        self.logger.info(f"Melody-capable presets: {self.melody_presets}")
+
         # Compositor & arranger
         base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "melodies"))
 
@@ -86,11 +95,14 @@ class Maestro:
                 self.logger.debug(f"[{zone}] remapped parts→presets: {list(remapped)}")
 
                 events = []
-                # raw melody under 'lead'
+
+                # choose a melody-capable preset
+                lead_preset = random.choice(self.melody_presets) if self.melody_presets else "piano"
+
                 for ev in raw:
                     events.append({
                         "time_offset": ev["time"] * (60.0/self.tempo),
-                        "preset":      "lead",
+                        "preset":      lead_preset,
                         "params":      {
                             "notes":     ev["notes"],
                             "durations": ev["durations"],
