@@ -14,6 +14,11 @@ from pyo import Server, SfPlayer
 import pyo.lib._core as _pc
 
 logger = logging.getLogger(__name__)
+if not logging.getLogger().handlers:
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s %(levelname)s:%(name)s:%(message)s",
+    )
 logger.setLevel(logging.DEBUG)
 TTSProp = Literal["voice", "rate", "volume"]
 
@@ -120,11 +125,38 @@ class AudioEngine:
                         logger.debug("'%s' still playing. Keeping.", name)
                     break
             else:
-                logger.debug(
-                    "'%s' of type %s has no playback check. Skipping cleanup.",
-                    name,
-                    type(inst).__name__,
-                )
+                # 3) dictionary of components
+                if isinstance(inst, dict):
+                    playing = False
+                    for obj in inst.values():
+                        for method in ("isPlaying", "getIsPlaying"):
+                            if hasattr(obj, method) and callable(getattr(obj, method)):
+                                try:
+                                    if getattr(obj, method)():
+                                        playing = True
+                                        break
+                                except Exception:
+                                    pass
+                        if hasattr(obj, "isDone"):
+                            try:
+                                if not obj.isDone():
+                                    playing = True
+                                    break
+                            except Exception:
+                                pass
+                        if playing:
+                            break
+                    if not playing:
+                        logger.info("'%s' dict components stopped. Removing.", name)
+                        self.active_presets.remove(info)
+                    else:
+                        logger.debug("'%s' still has active components.", name)
+                else:
+                    logger.debug(
+                        "'%s' of type %s has no playback check. Skipping cleanup.",
+                        name,
+                        type(inst).__name__,
+                    )
 
         logger.debug("Finished _cleanup_stopped_presets. Active count: %d", len(self.active_presets))
 
