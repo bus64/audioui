@@ -18,8 +18,11 @@ class AudioEngineClient:
     def __init__(self, *, debug: bool = True):
         # — Logging setup —
         self.logger = logging.getLogger(__name__)
-        if debug:
-            logging.basicConfig(level=logging.DEBUG)
+        if debug and not logging.getLogger().handlers:
+            logging.basicConfig(
+                level=logging.DEBUG,
+                format="%(asctime)s %(levelname)s:%(name)s:%(message)s",
+            )
 
         # — Start a private asyncio loop in a background thread —
         self.loop = asyncio.new_event_loop()
